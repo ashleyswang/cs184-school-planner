@@ -1,10 +1,13 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DeadlineEvent
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DurationEvent
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
-import java.util.*
+import java.time.LocalDateTime
 
+@RequiresApi(Build.VERSION_CODES.O)
 class Term : Scope {
     override val id: String
     override var name: String = "New Term"
@@ -32,20 +35,20 @@ class Term : Scope {
     }
     fun removeStart() { _start = null }
     fun getStart() : Event? { return _start }
-    fun setStart(date: Date) {
+    fun setStart(date: LocalDateTime) {
         if (_start == null) addStart()
         _start!!.setDate(date)
     }
 
-    fun addEnd() { _end =
-        DeadlineEvent(
+    fun addEnd() {
+        _end = DeadlineEvent(
             this,
             Scope.randomString()
         )
     }
     fun removeEnd() { _end = null }
     fun getEnd() : Event? { return _end }
-    fun setEnd(date: Date) {
+    fun setEnd(date: LocalDateTime) {
         if (_end == null) addEnd()
         _end!!.setDate(date)
     }

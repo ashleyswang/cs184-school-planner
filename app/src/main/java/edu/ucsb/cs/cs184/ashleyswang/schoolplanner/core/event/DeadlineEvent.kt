@@ -1,14 +1,22 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
+@RequiresApi(Build.VERSION_CODES.O)
 open class DeadlineEvent : SingleEvent {
     override val id: String
     override var name: String = "New Deadline"
     override val scope: Scope
+    override val notifId: Int = Random.nextInt().absoluteValue
 
-    private var _date: Calendar = Calendar.getInstance()
+    private var _date: LocalDateTime = LocalDateTime.now()
 
     /*
      * Constructor:
@@ -31,6 +39,9 @@ open class DeadlineEvent : SingleEvent {
     }
 
     /* Getters and Setters */
-    fun getDate(): Calendar { return _date }
-    fun setDate(date: Calendar) { _date = date }
+    override fun getDate(): LocalDateTime { return _date }
+    override fun setDate(date: LocalDateTime) { _date = date }
+    override fun getDuration(): Duration {
+        return Duration.between(_date, _date)
+    }
 }
