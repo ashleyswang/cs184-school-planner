@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 class Term : Scope {
     override val id: String
     override var name: String = "New Term"
+    val control: Controller
     private var _start: DeadlineEvent? = null
     private var _end: DeadlineEvent? = null
     private var _courses: MutableMap<String, Course> = mutableMapOf<String, Course>();
@@ -22,8 +23,9 @@ class Term : Scope {
      * @return:
      * Term object with default name "Term #" and null start and end dates.
      */
-    constructor(id: String) {
+    constructor(control: Controller, id: String) {
         this.id = id
+        this._control = control
     }
 
     /* Getters and Setters for Term Settings*/
