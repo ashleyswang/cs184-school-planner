@@ -12,7 +12,7 @@ import kotlin.random.Random
 @RequiresApi(Build.VERSION_CODES.O)
 open class DurationEvent : SingleEvent {
     override val id: String
-    override var name: String = "New Deadline"
+    override var name: String = "New Event"
     override val scope: Scope
     override val notifId: Int = Random.nextInt().absoluteValue
 

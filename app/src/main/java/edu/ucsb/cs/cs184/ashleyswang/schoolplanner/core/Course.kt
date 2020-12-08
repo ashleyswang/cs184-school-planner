@@ -1,9 +1,12 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DeadlineEvent
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DurationEvent
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
+@RequiresApi(Build.VERSION_CODES.O)
 class Course : Scope {
     override val id: String
     override var name: String = "New Course"
