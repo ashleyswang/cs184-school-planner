@@ -6,18 +6,18 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
+
 class Controller {
     val TAG: String = "Controller"
     val user: String
     private var _terms: MutableMap<String, Term> = mutableMapOf<String, Term>();
 
-    val database: FirebaseDatabase = Firebase.database
     val db: DatabaseReference
 
-    constructor(user: String) {
+    constructor(user: String, database: FirebaseDatabase) {
         this.user = user
         this.db = database.getReference("core").child(user)
-        _addDbListener()
+//        _addDbListener()
     }
 
     fun getTerms(): MutableMap<String, Term> { return _terms }
@@ -26,14 +26,15 @@ class Controller {
         return _terms.get(id)
     }
 
-    fun addTerm(): Term? {
+    fun addTerm(): Term {
         val term: Term = Term(this)
-        return _terms.put(term.id, term)
+        _terms.put(term.id, term)
+        return term
     }
 
-    fun removeTerm(id: String): Term? {
-        db.child("terms").child(id).removeValue()
-        return _terms.remove(id)
+    fun removeTerm(term: Term): Term? {
+        db.child("terms").child(term.id).removeValue()
+        return _terms.remove(term.id)
     }
 
     private fun _addDbListener() {

@@ -6,19 +6,22 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 class Meeting {
     val TAG: String = "Meeting"
     val id: String
     var name: String
-        get() { return name }
+        get() { return event!!.name }
         set(value: String) {
-            name = value
-            this.db.child("name").setValue(name)
+            event!!.name = value
+//            this.db.child("name").setValue(value)
         }
+    val event: Event?
+        get() { return course.getEvent(this.eventId) }
     val course: Course
     val eventId: String
-    var options: Options? = null
+    var options: Options = Options()
 
     val db: DatabaseReference
 
@@ -67,13 +70,9 @@ class Meeting {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Any>>()
                 if (value != null) {
-                    options = Options()
-                    val mandatory = value["mandatory"]
-                    if (mandatory != null) options!!.mandatory = mandatory as Boolean
-
-                    val link = value["link"]
-                    if (link != null) options!!.link = link as String
-                } else options = null
+                    options.mandatory = value["mandatory"] as Boolean?
+                    options.link = value["link"] as String?
+                } else options = Options()
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read options.", error.toException())
@@ -82,17 +81,17 @@ class Meeting {
     }
 
     inner class Options {
-        var mandatory: Boolean?
+        var mandatory: Boolean? = null
             get() { return mandatory }
             set(value: Boolean?) {
-                mandatory = value
-                db.child("options").child("mandatory").setValue(mandatory)
+                field = value
+                db.child("options").child("mandatory").setValue(field)
             }
-        var link: String?
+        var link: String? = null
             get() { return link }
             set(value: String??) {
-                link = value
-                db.child("options").child("link").setValue(link)
+                field = value
+                db.child("options").child("link").setValue(field)
             }
     }
 }

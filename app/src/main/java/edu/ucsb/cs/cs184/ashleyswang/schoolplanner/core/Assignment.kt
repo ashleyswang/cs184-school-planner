@@ -6,19 +6,22 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 class Assignment {
     val TAG: String = "Assignment"
     val id: String
     var name: String
-        get() { return name }
+        get() { return event!!.name }
         set(value: String) {
-            name = value
-            this.db.child("name").setValue(name)
+            event!!.name = value
+//            this.db.child("name").setValue(value)
         }
+    val event: Event?
+        get() { return course.getEvent(this.eventId) }
     val course: Course
     val eventId: String
-    var options: Options? = null
+    var options: Options = Options()
 
     val db: DatabaseReference
 
@@ -29,7 +32,7 @@ class Assignment {
         this.db = course.db.child("assign").child(id)
         this.name = "New Assignment"
         this.db.child("eventId").setValue(eventId)
-        _addDbListener()
+//        _addDbListener()
     }
 
     constructor(course: Course, key: String, value: Map<String, Any>) {
@@ -53,34 +56,18 @@ class Assignment {
             if (complete != null) this.options!!.complete = complete as Boolean
         }
 
-        _addDbListener()
+//        _addDbListener()
     }
 
     private fun _addDbListener() {
-        db.child("name").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<String>()
-                if (value != null && value != name) name = value
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read name.", error.toException())
-            }
-        })
-
         db.child("options").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Any>>()
                 if (value != null) {
-                    options = Options()
-                    val weight = value["weight"]
-                    if (weight != null) options!!.weight = weight as Float
-
-                    val grade = value["grade"]
-                    if (grade != null) options!!.grade = grade as Float
-
-                    val complete = value["complete"]
-                    if (complete != null) options!!.complete = complete as Boolean
-                } else options = null
+                    options.weight = value["weight"] as Float?
+                    options.grade = value["grade"] as Float?
+                    options.complete = value["complete"] as Boolean?
+                } else options = Options()
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
@@ -89,23 +76,23 @@ class Assignment {
     }
 
     inner class Options {
-        var weight: Float?
+        var weight: Float? = null
             get() { return weight }
             set(value: Float?) {
-                weight = value
-                db.child("options").child("weight").setValue(weight)
+                field = value
+                db.child("options").child("weight").setValue(field)
             }
-        var grade: Float?
+        var grade: Float? = null
             get() { return grade }
             set(value: Float?) {
-                grade = value
-                db.child("options").child("grade").setValue(grade)
+                field = value
+                db.child("options").child("grade").setValue(field)
             }
-        var complete: Boolean?
+        var complete: Boolean? = null
             get() { return complete }
             set(value: Boolean?) {
-                complete = value
-                db.child("options").child("complete").setValue(complete)
+                field = value
+                db.child("options").child("complete").setValue(field)
             }
     }
 }

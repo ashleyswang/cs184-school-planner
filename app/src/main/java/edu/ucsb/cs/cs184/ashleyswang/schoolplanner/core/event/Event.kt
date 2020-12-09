@@ -16,29 +16,30 @@ class Event {
     var name: String
         get() { return name }
         set(value: String) {
-            name = value
-            db.child("name").setValue(name)
+            field = value
+            db.child("name").setValue(field)
         }
     val scope: Scope
 
     var start: LocalDateTime
         get() { return start }
         set(value: LocalDateTime) {
-            start = value
-            db.child("start").setValue(start.toString())
+            field = value
+            db.child("start").setValue(field.toString())
         }
     var end: LocalDateTime?
         get() { return end }
         set(value: LocalDateTime?) {
-            end = value
-            db.child("end").setValue(end.toString())
+            field = value
+            if (field != null) db.child("end").setValue(field.toString())
+            else db.child("end").setValue(field)
         }
 
     val db: DatabaseReference
     var recur: RecurringEvent?
         get() { return recur }
         set(value: RecurringEvent?) {
-            recur = value
+            field = value
         }
 
     /*
@@ -55,7 +56,7 @@ class Event {
         this.start = LocalDateTime.now()
         this.end = null
         this.recur = null
-        _addDbListener()
+//        _addDbListener()
     }
 
     constructor(scope: Scope, key: String, value: Map<String, Any>) {
@@ -74,9 +75,10 @@ class Event {
             when (recurInfo["type"] as String) {
                 "weekly" -> this.recur = WeeklyEvent(this, recurInfo as Map<String, Any>)
                 "daily"  -> this.recur = DailyEvent(this, recurInfo as Map<String, Any>)
+                else     -> this.recur = null
             }
         }
-        _addDbListener()
+//        _addDbListener()
     }
 
     fun getDuration(): Duration {

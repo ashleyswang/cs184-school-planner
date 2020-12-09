@@ -12,13 +12,21 @@ class Course : Scope {
     val TAG: String = "Course"
     override val id: String
     override var name: String
-        get() { return name }
+        get() { return field }
         set(value: String) {
-            name = value
-            this.db.child("name").setValue(name)
+            field = value
+            this.db.child("name").setValue(field)
         }
     override val db: DatabaseReference
     val term: Term
+
+    val assign: MutableMap<String, Assignment>
+        get() { return _assign }
+    val meet: MutableMap<String, Meeting>
+        get() { return _meet }
+    val events: MutableMap<String, Event>
+        get() { return _events }
+
     private var _assign: MutableMap<String, Assignment> = mutableMapOf<String, Assignment>();
     private var _meet: MutableMap<String, Meeting> = mutableMapOf<String, Meeting>();
     private var _events: MutableMap<String, Event> = mutableMapOf<String, Event>();
@@ -36,7 +44,7 @@ class Course : Scope {
         this.term = term
         this.db = term.db.child("courses").child(id)
         this.name = "New Course"
-        _addDbListener()
+//        _addDbListener()
     }
 
     constructor(term: Term, key: String, value: Map<String, Any>) {
@@ -62,21 +70,21 @@ class Course : Scope {
             val meet = meets[key]?.let { Meeting(this, key, it) }
             if (meet != null) this._meet.put(key, meet)
         }
-        _addDbListener()
+//        _addDbListener()
     }
 
     /* Getters and Setters */
-    fun getAssigns() : MutableMap<String, Assignment> { return _assign }
     /*
      * Add Assignment:
      * @params: None
      * @return: Assignment object added if successful. Otherwise null.
      */
-    fun addAssign(): Assignment? {
+    fun addAssign(): Assignment {
         val event: Event = Event(this)
-        val assign: Assignment = Assignment(this, event.id)
         _events.put(event.id, event)
-        return _assign.put(assign.id, assign)
+        val assign: Assignment = Assignment(this, event.id)
+        _assign.put(assign.id, assign)
+        return assign
     }
 
     /*
@@ -84,24 +92,23 @@ class Course : Scope {
      * @params: id: String - key id for course
      * @return: Course object removed if successful. Otherwise null
      */
-    fun removeAssign(id: String): Assignment? {
-        db.child("assign").child(id).removeValue()
-        db.child("events").child(_assign[id]!!.eventId).removeValue()
+    fun removeAssign(assign: Assignment): Assignment? {
+        db.child("assign").child(assign.id).removeValue()
+        db.child("events").child(assign.eventId).removeValue()
         return _assign.remove(id)
     }
 
-    fun getMeets() : MutableMap<String, Meeting> { return _meet}
-
-    fun addMeet(): Meeting? {
+    fun addMeet(): Meeting {
         val event: Event = Event(this)
-        val meet: Meeting = Meeting(this, event.id)
         _events.put(event.id, event)
-        return _meet.put(meet.id, meet)
+        val meet: Meeting = Meeting(this, event.id)
+        _meet.put(meet.id, meet)
+        return meet
     }
 
-    fun removeMeet(id: String): Meeting? {
-        db.child("meet").child(id).removeValue()
-        db.child("events").child(_meet[id]!!.eventId).removeValue()
+    fun removeMeet(meet: Meeting): Meeting? {
+        db.child("meet").child(meet.id).removeValue()
+        db.child("events").child(meet.eventId).removeValue()
         return _meet.remove(id)
     }
 
@@ -116,14 +123,14 @@ class Course : Scope {
      * @return: Event object added if successful. Otherwise null.
      */
 
-    fun getEvents(): MutableMap<String, Event> { return _events }
     fun getEvent(key: String): Event? {
         return _events[key]
     }
 
-    fun addEvent(): Event? {
+    fun addEvent(): Event {
         val event: Event = Event(this)
-        return _events.put(event.id, event) as Event
+        _events.put(event.id, event)
+        return event
     }
 
     /*
@@ -131,8 +138,8 @@ class Course : Scope {
      * @params: id: String - key id for event
      * @return: Event object removed if successful. Otherwise null.
      */
-    fun removeEvent(id: String): Event? {
-        db.child("events").child(id).removeValue()
+    fun removeEvent(event: Event): Event? {
+        db.child("events").child(event.id).removeValue()
         return _events.remove(id)
     }
 

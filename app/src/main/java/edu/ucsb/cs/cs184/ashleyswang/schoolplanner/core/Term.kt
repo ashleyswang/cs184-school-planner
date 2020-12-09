@@ -13,13 +13,22 @@ class Term : Scope {
     val TAG: String = "Term"
     override val id: String
     override var name: String
-        get() { return name }
+        get() { return field }
         set(value: String) {
-            name = value
-            this.db.child("name").setValue(name)
+            field = value
+            this.db.child("name").setValue(field)
         }
     val control: Controller
     override val db: DatabaseReference
+
+    val start: Event?
+        get() { return _start }
+    val end: Event?
+        get() { return _end }
+    val courses: MutableMap<String, Course>
+        get() { return _courses }
+    val events: MutableMap<String, Event>
+        get() { return _events }
 
     private var _start: Event? = null
     private var _end: Event? = null
@@ -37,7 +46,7 @@ class Term : Scope {
         this.control = control
         this.db = control.db.child("terms").child(id)
         this.name = "New Term"
-        _addDbListener()
+//        _addDbListener()
     }
 
     constructor(control: Controller, key: String, value: Map<String, Any>) {
@@ -64,7 +73,7 @@ class Term : Scope {
             if (event != null) this._events.put(key, event)
         }
 
-        _addDbListener()
+//        _addDbListener()
     }
 
     fun setStart(date: LocalDateTime?) {
@@ -72,37 +81,38 @@ class Term : Scope {
             _start = null
             db.child("start").removeValue()
         } else {
-            if (_start == null) _start = Event(this)
+            if (_start == null) {
+                _start = Event(this)
+                _start!!.name = "Start of $name"
+            }
             _start!!.start = date
             db.child("start").setValue(date.toString())
         }
     }
-
-    fun getStart() : Event? { return _start }
 
     fun setEnd(date: LocalDateTime?) {
         if (date == null) {
             _end = null
             db.child("end").removeValue()
         } else {
-            if (_start == null) _start = Event(this)
-            _start!!.start = date
-            db.child("start").setValue(date.toString())
+            if (_end == null) {
+                _end = Event(this)
+                _end!!.name = "End of $name"
+            }
+            _end!!.start = date
+            db.child("end").setValue(date.toString())
         }
     }
-
-    fun getEnd() : Event? { return _end }
-
-    fun getCourses(): MutableMap<String, Course> { return _courses }
 
     /*
      * Add Course:
      * @params: None
      * @return: Course object added if successful. Otherwise null.
      */
-    fun addCourse(): Course? {
+    fun addCourse(): Course {
         val course: Course = Course(this)
-        return _courses.put(id, course)
+        _courses.put(id, course)
+        return course
     }
 
     /*
@@ -110,8 +120,8 @@ class Term : Scope {
      * @params: id: String - key id for course
      * @return: Course object removed if successful. Otherwise null
      */
-    fun removeCourse(id: String): Course? {
-        db.child("courses").child(id).removeValue()
+    fun removeCourse(course: Course): Course? {
+        db.child("courses").child(course.id).removeValue()
         return _courses.remove(id)
     }
 
@@ -120,9 +130,10 @@ class Term : Scope {
      * @params:
      * @return: Event object added if successful. Otherwise null.
      */
-    fun addEvent(): Event? {
+    fun addEvent(): Event {
         val event: Event = Event(this)
-        return _events.put(event.id, event) as Event
+        _events.put(event.id, event)
+        return event
     }
 
     /*
@@ -130,8 +141,8 @@ class Term : Scope {
      * @params: id: String - key id for event
      * @return: Event object removed if successful. Otherwise null.
      */
-    fun removeEvent(id: String): Event? {
-        db.child("events").child(id).removeValue()
+    fun removeEvent(event: Event): Event? {
+        db.child("events").child(event.id).removeValue()
         return _events.remove(id)
     }
 
