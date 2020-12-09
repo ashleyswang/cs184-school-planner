@@ -1,13 +1,19 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.SingleEvent
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.getValue
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 @RequiresApi(Build.VERSION_CODES.O)
 class Assignment {
-    val id: String = Scope.randomString()
+    val TAG: String = "Assignment"
+    val id: String
     var name: String
         get() { return name }
         set(value: String) {
@@ -15,17 +21,75 @@ class Assignment {
             this.db.child("name").setValue(name)
         }
     val course: Course
-    var event: SingleEvent
+    val eventId: String
     var options: Options? = null
 
     val db: DatabaseReference
 
-    constructor(course: Course) {
+    constructor(course: Course, eventId: String) {
+        this.id = Scope.randomString()
         this.course = course
-        this.event = SingleEvent(course)
+        this.eventId = eventId
         this.db = course.db.child("assign").child(id)
         this.name = "New Assignment"
-        this.db.child("eventId").setValue(this.event.id)
+        this.db.child("eventId").setValue(eventId)
+        _addDbListener()
+    }
+
+    constructor(course: Course, key: String, value: Map<String, Any>) {
+        this.id = key
+        this.course = course
+        this.db = course.db.child("assign").child(id)
+        this.name = value["name"] as String
+        this.eventId = value["eventId"] as String
+
+        if (value["options"] != null) {
+            val opts = value["options"] as Map<String, Any>
+            this.options = Options()
+
+            val weight = opts["weight"]
+            if (weight != null) this.options!!.weight = weight as Float
+
+            val grade = opts["grade"]
+            if (grade != null) this.options!!.grade = grade as Float
+
+            val complete = opts["complete"]
+            if (complete != null) this.options!!.complete = complete as Boolean
+        }
+
+        _addDbListener()
+    }
+
+    private fun _addDbListener() {
+        db.child("name").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != name) name = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read name.", error.toException())
+            }
+        })
+
+        db.child("options").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<Map<String, Any>>()
+                if (value != null) {
+                    options = Options()
+                    val weight = value["weight"]
+                    if (weight != null) options!!.weight = weight as Float
+
+                    val grade = value["grade"]
+                    if (grade != null) options!!.grade = grade as Float
+
+                    val complete = value["complete"]
+                    if (complete != null) options!!.complete = complete as Boolean
+                } else options = null
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read name.", error.toException())
+            }
+        })
     }
 
     inner class Options {

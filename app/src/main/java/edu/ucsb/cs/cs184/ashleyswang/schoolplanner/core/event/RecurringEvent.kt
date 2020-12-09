@@ -8,7 +8,8 @@ interface RecurringEvent {
     // Add more types of recurrences once we have more finalized behavior
     var start: LocalDateTime
     var end: LocalDateTime?
-    var event: Event
+    val event: Event
+    val type: String
 
     /* Returns next event based on today's date */
     fun getNextDate(): LocalDateTime?
