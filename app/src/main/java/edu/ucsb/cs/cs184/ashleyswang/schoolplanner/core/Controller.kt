@@ -1,14 +1,11 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
-@RequiresApi(Build.VERSION_CODES.O)
 class Controller {
     val TAG: String = "Controller"
     val user: String

@@ -1,19 +1,15 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
-import java.time.*
-import kotlin.math.absoluteValue
-import kotlin.random.Random
+import java.time.Duration
+import java.time.LocalDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 class Event {
     val TAG: String = "Event"
     val id: String

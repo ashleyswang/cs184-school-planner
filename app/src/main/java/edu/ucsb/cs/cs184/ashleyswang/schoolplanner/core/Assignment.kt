@@ -1,16 +1,12 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
-@RequiresApi(Build.VERSION_CODES.O)
 class Assignment {
     val TAG: String = "Assignment"
     val id: String

@@ -1,17 +1,13 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import java.time.DayOfWeek
 import java.time.LocalDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 class DailyEvent : RecurringEvent {
     val TAG: String = "DailyEvent"
     override val type: String = "daily"
