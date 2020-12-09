@@ -2,14 +2,21 @@ package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DeadlineEvent
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.DurationEvent
+import com.google.firebase.database.DatabaseReference
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.SingleEvent
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.RecurringEvent
 
 @RequiresApi(Build.VERSION_CODES.O)
 class Course : Scope {
-    override val id: String
-    override var name: String = "New Course"
+    override val id: String = Scope.randomString()
+    override var name: String
+        get() { return name }
+        set(value: String) {
+            name = value
+            this.db.child("name").setValue(name)
+        }
+    override val db: DatabaseReference
     private val _term: Term
     private var _assign: MutableMap<String, Assignment> = mutableMapOf<String, Assignment>();
     private var _meet: MutableMap<String, Meeting> = mutableMapOf<String, Meeting>();
@@ -23,9 +30,10 @@ class Course : Scope {
      * @return:
      * Term object with given properties. Courses/Events are both empty.
      */
-    constructor(term: Term, id: String) {
-        this.id = id
+    constructor(term: Term) {
         _term = term
+        db = term.db.child("courses").child(id)
+        name = "New Course"
     }
 
     /* Getters and Setters */
@@ -38,8 +46,9 @@ class Course : Scope {
      * @return: Assignment object added if successful. Otherwise null.
      */
     fun addAssign(): Assignment? {
-        val id: String = Scope.randomString()
-        val assign: Assignment = Assignment(this, id)
+        val assign: Assignment = Assignment(this)
+        _events.put(assign.event.id, assign.event)
+        db.child("events").child(assign.event.id).child("created").setValue(true)
         return _assign.put(id, assign)
     }
 
@@ -49,28 +58,23 @@ class Course : Scope {
      * @return: Course object removed if successful. Otherwise null
      */
     fun removeAssign(id: String): Assignment? {
+        db.child("assign").child(id).removeValue()
+        db.child("events").child(_assign[id]?.event!!.id).removeValue()
         return _assign.remove(id)
     }
 
     fun getMeet() : MutableMap<String, Meeting> { return _meet}
 
-    /*
-     * Add Assignment:
-     * @params: None
-     * @return: Assignment object added if successful. Otherwise null.
-     */
     fun addMeet(): Meeting? {
-        val id: String = Scope.randomString()
-        val meet: Meeting = Meeting(this, id)
+        val meet: Meeting = Meeting(this)
+        _events.put(meet.event.id, meet.event)
+        db.child("events").child(meet.event.id).child("created").setValue(true)
         return _meet.put(id, meet)
     }
 
-    /*
-     * Remove Course:
-     * @params: id: String - key id for course
-     * @return: Course object removed if successful. Otherwise null
-     */
     fun removeMeet(id: String): Meeting? {
+        db.child("meet").child(id).removeValue()
+        db.child("events").child(_assign[id]?.event!!.id).removeValue()
         return _meet.remove(id)
     }
 
@@ -79,24 +83,15 @@ class Course : Scope {
      * @params: None
      * @return: Event object added if successful. Otherwise null.
      */
-    fun addDeadlineEvent(): DeadlineEvent? {
-        val id: String = Scope.randomString()
-        val event: Event =
-            DeadlineEvent(
-                this,
-                id
-            )
-        return _events.put(id, event) as DeadlineEvent
+    fun addSingleEvent(): SingleEvent? {
+        val event: SingleEvent = SingleEvent(this)
+        db.child("events").child(event.id).child("created").setValue(true)
+        return _events.put(event.id, event) as SingleEvent
     }
 
-    fun addDurationEvent(): DurationEvent? {
-        val id: String = Scope.randomString()
-        val event: Event =
-            DurationEvent(
-                this,
-                id
-            )
-        return _events.put(id, event) as DurationEvent
+    fun addRecurEvent(event: RecurringEvent): RecurringEvent? {
+        db.child("events").child(event.id).child("created:").setValue(true)
+        return _events.put(event.id, event) as RecurringEvent
     }
 
     /*

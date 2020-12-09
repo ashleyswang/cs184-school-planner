@@ -1,27 +1,34 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.recurevent
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.SingleEvent
+import com.google.firebase.database.DatabaseReference
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DailyEvent : RecurringEvent {
-    override val id: String
-    override var name: String
-    override val scope: Scope
+    override var start: LocalDateTime
+        get() { return start }
+        set(value: LocalDateTime) {
+            start = value
+            db.child("start").setValue(start)
+        }
+    override var end: LocalDateTime?
+        get() { return end }
+        set(value: LocalDateTime?) {
+            end = value
+            db.child("end").setValue(end)
+        }
+    override var event: Event
+    private var _canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
 
-    override var start: LocalDateTime = LocalDateTime.now()
-    override var end: LocalDateTime? = null
-    override var event: SingleEvent
-    override var canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
+    val db: DatabaseReference
 
-    constructor(event: SingleEvent) {
-        this.id = event.id
-        this.scope = event.scope
-        this.name = event.name
+    constructor(event: Event) {
         this.event = event
+        this.db = event.db.child("recur")
+        this.start = event.start
+        this.end = null
     }
 
     /* Returns next event based on today's date */
@@ -43,11 +50,12 @@ class DailyEvent : RecurringEvent {
 
     /* Removes single event from recurrence with matching date */
     override fun removeDate(date: LocalDateTime) {
-        val eventDate = event.getDate()
+        val eventDate = event.start
         val removedDate: LocalDateTime = date.withHour(eventDate.hour)
             .withMinute(eventDate.minute)
             .withSecond(eventDate.second)
-        canceled.add(removedDate)
+        _canceled.add(removedDate)
+        db.child("canceled").child(_canceled.size.toString()).setValue(removedDate)
     }
 
     private fun getDateAfter(date: LocalDateTime): LocalDateTime? {
@@ -55,7 +63,7 @@ class DailyEvent : RecurringEvent {
             return null
         if (date.isBefore(start))
             return start
-        val eventDate = event.getDate()
+        val eventDate = event.start
         var newDate = date.withHour(eventDate.hour)
             .withMinute(eventDate.minute)
             .withSecond(eventDate.second)
