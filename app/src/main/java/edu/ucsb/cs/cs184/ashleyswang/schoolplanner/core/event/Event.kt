@@ -13,34 +13,38 @@ import java.time.LocalDateTime
 class Event {
     val TAG: String = "Event"
     val id: String
-    var name: String
-        get() { return name }
-        set(value: String) {
-            field = value
-            db.child("name").setValue(field)
-        }
     val scope: Scope
+    val db: DatabaseReference
 
+    var name: String
+        get() { return _name }
+        set(value: String) {
+            _name = value
+            db.child("name").setValue(_name)
+        }
     var start: LocalDateTime
-        get() { return start }
+        get() { return _start }
         set(value: LocalDateTime) {
-            field = value
-            db.child("start").setValue(field.toString())
+            _start = value
+            db.child("start").setValue(_start.toString())
         }
     var end: LocalDateTime?
-        get() { return end }
+        get() { return _end }
         set(value: LocalDateTime?) {
-            field = value
-            if (field != null) db.child("end").setValue(field.toString())
-            else db.child("end").setValue(field)
+            _end = value
+            if (_end != null) db.child("end").setValue(_end.toString())
+            else db.child("end").setValue(_end)
+        }
+    var recur: RecurringEvent?
+        get() { return _recur }
+        set(value: RecurringEvent?) {
+            _recur = value
         }
 
-    val db: DatabaseReference
-    var recur: RecurringEvent?
-        get() { return recur }
-        set(value: RecurringEvent?) {
-            field = value
-        }
+    private var _name: String = "New Event"
+    private var _start: LocalDateTime = LocalDateTime.now()
+    private var _end: LocalDateTime? = null
+    private var _recur: RecurringEvent? = null
 
     /*
      * Constructor:
@@ -56,43 +60,45 @@ class Event {
         this.start = LocalDateTime.now()
         this.end = null
         this.recur = null
-//        _addDbListener()
+        _addDbListener()
     }
 
+    /* Constructor used when copying info from database */
     constructor(scope: Scope, key: String, value: Map<String, Any>) {
         this.id = key
         this.scope = scope
         this.db = scope.db.child("events").child(id)
-        this.name = value["name"] as String
-        this.start = LocalDateTime.parse(value["start"] as String)
 
-        if (value["end"] == null) this.end = null
-        else this.end = LocalDateTime.parse(value["end"] as String)
+        if (value["name"] != null)
+            this._name = value["name"]!! as String
+        if (value["start"] != null)
+            this._start = LocalDateTime.parse(value["start"] as String)
+        if (value["end"] != null)
+            this._end = LocalDateTime.parse(value["end"] as String)
 
-        if (value["recur"] == null) this.recur = null
-        else {
+        if (value["recur"] != null) {
             val recurInfo = value["recur"] as Map<String, Any>
             when (recurInfo["type"] as String) {
-                "weekly" -> this.recur = WeeklyEvent(this, recurInfo as Map<String, Any>)
-                "daily"  -> this.recur = DailyEvent(this, recurInfo as Map<String, Any>)
-                else     -> this.recur = null
+                "weekly" -> this._recur = WeeklyEvent(this, recurInfo as Map<String, Any>)
+                "daily"  -> this._recur = DailyEvent(this, recurInfo as Map<String, Any>)
+                else     -> this._recur = null
             }
         }
-//        _addDbListener()
+        _addDbListener()
     }
 
     fun getDuration(): Duration {
-        if (end == null)
-            return Duration.between(start, start)
+        if (_end == null)
+            return Duration.between(_start, _start)
         else
-            return Duration.between(start, end)
+            return Duration.between(_start, _end)
     }
 
     private fun _addDbListener() {
         db.child("name").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != name) name = value
+                if (value != null && value != _name) _name = value
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
@@ -102,7 +108,7 @@ class Event {
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && value != start.toString()) start = LocalDateTime.parse(value)
+                if (value != null && value != _start.toString()) _start = LocalDateTime.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -112,11 +118,11 @@ class Event {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && end == null ||
-                    value != null && value != end!!.toString())
-                    end = LocalDateTime.parse(value)
-                else if (value == null && end != null)
-                    end = null
+                if (value != null && _end == null ||
+                    value != null && value != _end!!.toString())
+                    _end = LocalDateTime.parse(value)
+                else if (value == null && _end != null)
+                    _end = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())
@@ -128,14 +134,14 @@ class Event {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Any>>()
                 if (value != null &&
-                    (recur == null || recur != null && value["type"] as String != recur!!.type)
+                    (_recur == null || _recur != null && value["type"] as String != _recur!!.type)
                 ) {
                     when (value["type"] as String) {
-                        "weekly" -> recur = WeeklyEvent(this@Event, value)
-                        "daily"  -> recur = DailyEvent(this@Event, value)
+                        "weekly" -> _recur = WeeklyEvent(this@Event, value)
+                        "daily"  -> _recur = DailyEvent(this@Event, value)
                     }
-                } else if (value == null )
-                    recur = null
+                } else if (value == null)
+                    _recur = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read recurrence.", error.toException())

@@ -9,23 +9,30 @@ import com.google.firebase.database.ktx.getValue
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 
-open class WeeklyEvent : RecurringEvent {
+class WeeklyEvent : RecurringEvent {
     val TAG: String = "WeeklyEvent"
     override val type: String = "weekly"
-    override var start: LocalDateTime
-        get() { return start }
-        set(value: LocalDateTime) {
-            start = value
-            db.child("start").setValue(start.toString())
-        }
-    override var end: LocalDateTime?
-        get() { return end }
-        set(value: LocalDateTime?) {
-            end = value
-            db.child("end").setValue(end.toString())
-        }
     override val event: Event
 
+    override var start: LocalDateTime
+        get() { return _start }
+        set(value: LocalDateTime) {
+            _start = value
+            db.child("start").setValue(_start.toString())
+        }
+    override var end: LocalDateTime?
+        get() { return _end }
+        set(value: LocalDateTime?) {
+            _end = value
+            db.child("end").setValue(_end.toString())
+        }
+    val canceled: MutableSet<LocalDateTime>
+        get() { return _canceled }
+    val days: MutableSet<DayOfWeek>
+        get() { return _days }
+
+    private var _start: LocalDateTime = LocalDateTime.now()
+    private var _end: LocalDateTime? = null
     private var _canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
     private var _days: MutableSet<DayOfWeek> = mutableSetOf<DayOfWeek>()
 
@@ -34,6 +41,7 @@ open class WeeklyEvent : RecurringEvent {
     constructor(event: Event) {
         this.event = event
         this.db = event.db.child("recur")
+        this.db.child("type").setValue(type)
         this.start = event.start
         this.end = null
         removeDays(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
@@ -44,28 +52,31 @@ open class WeeklyEvent : RecurringEvent {
     constructor(event: Event, info: Map<String, Any>) {
         this.event = event
         this.db = event.db.child("recur")
-        this.start = LocalDateTime.parse(info["start"] as String)
 
-        if (info["end"] == null) this.end = null
-        else this.end = LocalDateTime.parse(info["end"] as String)
+        if (info["start"] != null)
+            this._start = LocalDateTime.parse(info["start"] as String)
+        if (info["end"] != null)
+            this._end = LocalDateTime.parse(info["end"] as String)
 
-        removeDays(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
-        for (key in (info["days"] as Map<String, Boolean>).keys) {
-            when (key) {
-                "MONDAY"    -> _days.add(DayOfWeek.MONDAY)
-                "TUESDAY"   -> _days.add(DayOfWeek.TUESDAY)
-                "WEDNESDAY" -> _days.add(DayOfWeek.WEDNESDAY)
-                "THURSDAY"  -> _days.add(DayOfWeek.THURSDAY)
-                "FRIDAY"    -> _days.add(DayOfWeek.FRIDAY)
-                "SATURDAY"  -> _days.add(DayOfWeek.SATURDAY)
-                "SUNDAY"    -> _days.add(DayOfWeek.SUNDAY)
+        val daysInfo = info["days"] as Map<String, Boolean>?
+        if (daysInfo != null)
+            for (pair in daysInfo) {
+                if (pair.value)
+                    when (pair.key) {
+                        "MONDAY"    -> _days.add(DayOfWeek.MONDAY)
+                        "TUESDAY"   -> _days.add(DayOfWeek.TUESDAY)
+                        "WEDNESDAY" -> _days.add(DayOfWeek.WEDNESDAY)
+                        "THURSDAY"  -> _days.add(DayOfWeek.THURSDAY)
+                        "FRIDAY"    -> _days.add(DayOfWeek.FRIDAY)
+                        "SATURDAY"  -> _days.add(DayOfWeek.SATURDAY)
+                        "SUNDAY"    -> _days.add(DayOfWeek.SUNDAY)
+                    }
             }
-        }
 
-        val canceled = info["canceled"] as ArrayList<String>
-        for (date in canceled)
-            this._canceled.add(LocalDateTime.parse(date))
+        val cancelInfo = info["canceled"] as ArrayList<String>?
+        if (cancelInfo != null)
+            for (date in cancelInfo)
+                this._canceled.add(LocalDateTime.parse(date))
         _addDbListener()
     }
 
@@ -97,22 +108,23 @@ open class WeeklyEvent : RecurringEvent {
     }
 
     private fun getDateAfter(date: LocalDateTime): LocalDateTime? {
-        if (end != null && date.isAfter(end))
+        if (_end != null && date.isAfter(_end))
             return null
-        if (date.isBefore(start))
-            return start
+        if (date.isBefore(_start))
+            return _start
         val eventDate = event.start
-        var i: Int = 0
+        var newDate: LocalDateTime = date.withHour(eventDate.hour)
+            .withMinute(eventDate.minute)
+            .withSecond(eventDate.second)
+
         while (true) {
-            var newDate: LocalDateTime = date.plusDays(i.toLong())
-            if (_days.contains(newDate.dayOfWeek)) {
-                newDate = newDate.withHour(eventDate.hour)
-                    .withMinute(eventDate.minute)
-                    .withSecond(eventDate.second)
-                if (newDate.isAfter(date) && _canceled.count{e -> newDate.isEqual(e)} == 0)
-                    return newDate
-            }
+            if (newDate.isAfter(date) && _days.contains(newDate.dayOfWeek) &&
+                _canceled.count { e -> newDate.isEqual(e) } == 0)
+                break
+            newDate = newDate.plusDays(1.toLong())
         }
+
+        return if (_end != null && newDate.isAfter(_end)) null else newDate
     }
 
     /* Add Day of the Week to recurrence */
@@ -152,7 +164,8 @@ open class WeeklyEvent : RecurringEvent {
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && value != start.toString()) start = LocalDateTime.parse(value)
+                if (value != null && value != _start.toString())
+                    _start = LocalDateTime.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -162,11 +175,11 @@ open class WeeklyEvent : RecurringEvent {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && end == null ||
-                    value != null && value != end!!.toString())
-                    end = LocalDateTime.parse(value)
-                else if (value == null && end != null)
-                    end = null
+                if (value != null && _end == null ||
+                    value != null && value != _end!!.toString())
+                    _end = LocalDateTime.parse(value)
+                else if (value == null && _end != null)
+                    _end = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())
@@ -177,17 +190,19 @@ open class WeeklyEvent : RecurringEvent {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Boolean>>()
                 if (value != null) {
-                    for (day in value) {
-                        if (day.value)
-                            when (day.key) {
-                                "MONDAY"    -> _days.add(DayOfWeek.MONDAY)
-                                "TUESDAY"   -> _days.add(DayOfWeek.TUESDAY)
-                                "WEDNESDAY" -> _days.add(DayOfWeek.WEDNESDAY)
-                                "THURSDAY"  -> _days.add(DayOfWeek.THURSDAY)
-                                "FRIDAY"    -> _days.add(DayOfWeek.FRIDAY)
-                                "SATURDAY"  -> _days.add(DayOfWeek.SATURDAY)
-                                "SUNDAY"    -> _days.add(DayOfWeek.SUNDAY)
-                            }
+                    var day: DayOfWeek? = null
+                    for (pair in value) {
+                        when (pair.key) {
+                            "MONDAY" -> day = DayOfWeek.MONDAY
+                            "TUESDAY" -> day = DayOfWeek.TUESDAY
+                            "WEDNESDAY" -> day = DayOfWeek.WEDNESDAY
+                            "THURSDAY" -> day = DayOfWeek.THURSDAY
+                            "FRIDAY" -> day = DayOfWeek.FRIDAY
+                            "SATURDAY" -> day = DayOfWeek.SATURDAY
+                            "SUNDAY" -> day = DayOfWeek.SUNDAY
+                        }
+                        if (pair.value) _days.add(day!!)
+                        else _days.remove(day!!)
                     }
                 }
 

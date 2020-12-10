@@ -10,20 +10,16 @@ import com.google.firebase.ktx.Firebase
 class Controller {
     val TAG: String = "Controller"
     val user: String
+    val db: DatabaseReference
+    val terms: MutableMap<String, Term>
+        get() { return _terms }
+
     private var _terms: MutableMap<String, Term> = mutableMapOf<String, Term>();
 
-    val db: DatabaseReference
-
-    constructor(user: String, database: FirebaseDatabase) {
+    constructor(user: String) {
         this.user = user
-        this.db = database.getReference("core").child(user)
-//        _addDbListener()
-    }
-
-    fun getTerms(): MutableMap<String, Term> { return _terms }
-
-    fun getTerm(id: String): Term? {
-        return _terms.get(id)
+        this.db = Firebase.database.getReference("core").child(user)
+        _addDbListener()
     }
 
     fun addTerm(): Term {
@@ -41,18 +37,19 @@ class Controller {
         db.child("terms").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_terms.keys).size != 0 ||
-                    _terms.keys.minus(value!!.keys).size != 0) {
+                if (value == null)
+                    _terms.clear()
+                else if (value.keys.minus(_terms.keys).isNotEmpty() ||
+                    _terms.keys.minus(value.keys).isNotEmpty()
+                ) {
                     val add: Set<String> = value.keys.minus(_terms.keys)
-                    val rem: Set<String> = _terms.keys.minus(value.keys)
-
                     for (key in add) {
-                        val term = value[key]?.let { Term(this@Controller, key, it) }
-                        if (term != null) _terms.put(key, term)
+                        val term = Term(this@Controller, key, value[key]!!)
+                        _terms.put(key, term)
                     }
 
-                    for (key in rem)
-                        _terms.remove(key)
+                    val rem: Set<String> = _terms.keys.minus(value.keys)
+                    for (key in rem) _terms.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {

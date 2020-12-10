@@ -11,19 +11,19 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 class Meeting {
     val TAG: String = "Meeting"
     val id: String
-    var name: String
-        get() { return event!!.name }
-        set(value: String) {
-            event!!.name = value
-//            this.db.child("name").setValue(value)
-        }
-    val event: Event?
-        get() { return course.getEvent(this.eventId) }
     val course: Course
-    val eventId: String
-    var options: Options = Options()
-
     val db: DatabaseReference
+    val eventId: String
+    val event: Event
+        get() { return course.events[this.eventId]!! }
+
+    var name: String
+        get() { return event.name }
+        set(value: String) {
+            event.name = value
+        }
+
+    var options: Options = Options()
 
     constructor(course: Course, eventId: String) {
         this.id = Scope.randomString()
@@ -31,41 +31,30 @@ class Meeting {
         this.eventId = eventId
         this.db = course.db.child("meet").child(id)
         this.name = "New Meeting"
-        this.db.child("eventId").setValue(this.eventId)
+        this.db.child("eventId").setValue(eventId)
         _addDbListener()
     }
 
     constructor(course: Course, key: String, value: Map<String, Any>) {
         this.id = key
         this.course = course
-        this.db = course.db.child("assign").child(id)
-        this.name = value["name"] as String
+        this.db = course.db.child("meet").child(id)
         this.eventId = value["eventId"] as String
 
         if (value["options"] != null) {
             val opts = value["options"] as Map<String, Any>
             this.options = Options()
 
-            val mandatory = opts["mandatory"]
-            if (mandatory != null) this.options!!.mandatory = mandatory as Boolean
+            val mandatory = opts["mandatory"] as Boolean?
+            if (mandatory != null) this.options._mandatory = mandatory
 
-            val link = opts["link"]
-            if (link != null) this.options!!.link = link as String
+            val link = opts["link"] as String?
+            if (link != null) this.options._link = link
         }
         _addDbListener()
     }
 
     private fun _addDbListener() {
-        db.child("name").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<String>()
-                if (value != null && value != name) name = value
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read name.", error.toException())
-            }
-        })
-
         db.child("options").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Any>>()
@@ -81,17 +70,20 @@ class Meeting {
     }
 
     inner class Options {
-        var mandatory: Boolean? = null
-            get() { return mandatory }
+        var mandatory: Boolean?
+            get() { return _mandatory }
             set(value: Boolean?) {
-                field = value
-                db.child("options").child("mandatory").setValue(field)
+                _mandatory = value
+                db.child("options").child("mandatory").setValue(_mandatory)
             }
-        var link: String? = null
-            get() { return link }
+        var link: String?
+            get() { return _link }
             set(value: String??) {
-                field = value
-                db.child("options").child("link").setValue(field)
+                _link = value
+                db.child("options").child("link").setValue(_link)
             }
+
+        internal var _mandatory: Boolean? = null
+        internal var _link: String? = null
     }
 }

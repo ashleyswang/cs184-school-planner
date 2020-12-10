@@ -11,19 +11,25 @@ import java.time.LocalDateTime
 class DailyEvent : RecurringEvent {
     val TAG: String = "DailyEvent"
     override val type: String = "daily"
+    override val event: Event
+
     override var start: LocalDateTime
-        get() { return start }
+        get() { return _start }
         set(value: LocalDateTime) {
-            start = value
-            db.child("start").setValue(start)
+            _start = value
+            db.child("start").setValue(_start)
         }
     override var end: LocalDateTime?
-        get() { return end }
+        get() { return _end }
         set(value: LocalDateTime?) {
-            end = value
-            db.child("end").setValue(end)
+            _end = value
+            db.child("end").setValue(_end)
         }
-    override var event: Event
+    val canceled: MutableSet<LocalDateTime>
+        get () { return _canceled }
+
+    private var _start: LocalDateTime = LocalDateTime.now()
+    private var _end: LocalDateTime? = null
     private var _canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
 
     val db: DatabaseReference
@@ -31,6 +37,7 @@ class DailyEvent : RecurringEvent {
     constructor(event: Event) {
         this.event = event
         this.db = event.db.child("recur")
+        this.db.child("type").setValue(type)
         this.start = event.start
         this.end = null
         _addDbListener()
@@ -39,14 +46,16 @@ class DailyEvent : RecurringEvent {
     constructor(event: Event, info: Map<String, Any>) {
         this.event = event
         this.db = event.db.child("recur")
-        this.start = LocalDateTime.parse(info["start"] as String)
 
-        if (info["end"] == null) this.end = null
-        else this.end = LocalDateTime.parse(info["end"] as String)
+        if (info["start"] != null)
+            this._start = LocalDateTime.parse(info["start"] as String)
+        if (info["end"] != null)
+            this._end = LocalDateTime.parse(info["end"] as String)
 
-        val canceled = info["canceled"] as ArrayList<String>
-        for (date in canceled)
-            this._canceled.add(LocalDateTime.parse(date))
+        val cancelInfo = info["canceled"] as ArrayList<String>?
+        if (cancelInfo != null)
+            for (date in cancelInfo)
+                this._canceled.add(LocalDateTime.parse(date))
         _addDbListener()
     }
 
@@ -78,27 +87,31 @@ class DailyEvent : RecurringEvent {
     }
 
     private fun getDateAfter(date: LocalDateTime): LocalDateTime? {
-        if (end != null && date.isAfter(end))
+        if (_end != null && date.isAfter(_end))
             return null
-        if (date.isBefore(start))
-            return start
+        if (date.isBefore(_start))
+            return _start
         val eventDate = event.start
         var newDate = date.withHour(eventDate.hour)
             .withMinute(eventDate.minute)
             .withSecond(eventDate.second)
 
-        while (!newDate.isAfter(date))
+        while (true) {
+            if (newDate.isAfter(date) &&
+                _canceled.count { e -> newDate.isEqual(e) } == 0)
+                break
             newDate = newDate.plusDays(1.toLong())
+        }
 
-        if (end != null && newDate.isAfter(end)) return null
-        else return newDate
+        return if (_end != null && newDate.isAfter(_end)) null else newDate
     }
 
     private fun _addDbListener() {
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && value != start.toString()) start = LocalDateTime.parse(value)
+                if (value != null && value != _start.toString())
+                    _start = LocalDateTime.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -108,11 +121,11 @@ class DailyEvent : RecurringEvent {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && end == null ||
-                    value != null && value != end!!.toString())
-                    end = LocalDateTime.parse(value)
-                else if (value == null && end != null)
-                    end = null
+                if (value != null && _end == null ||
+                    value != null && value != _end!!.toString())
+                    _end = LocalDateTime.parse(value)
+                else if (value == null && _end != null)
+                    _end = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

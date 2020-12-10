@@ -11,15 +11,15 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 class Course : Scope {
     val TAG: String = "Course"
     override val id: String
-    override var name: String
-        get() { return field }
-        set(value: String) {
-            field = value
-            this.db.child("name").setValue(field)
-        }
-    override val db: DatabaseReference
     val term: Term
+    override val db: DatabaseReference
 
+    override var name: String
+        get() { return _name }
+        set(value: String) {
+            _name = value
+            this.db.child("name").setValue(_name)
+        }
     val assign: MutableMap<String, Assignment>
         get() { return _assign }
     val meet: MutableMap<String, Meeting>
@@ -27,9 +27,10 @@ class Course : Scope {
     val events: MutableMap<String, Event>
         get() { return _events }
 
-    private var _assign: MutableMap<String, Assignment> = mutableMapOf<String, Assignment>();
-    private var _meet: MutableMap<String, Meeting> = mutableMapOf<String, Meeting>();
-    private var _events: MutableMap<String, Event> = mutableMapOf<String, Event>();
+    private var _name: String = "New Course"
+    private var _assign: MutableMap<String, Assignment> = mutableMapOf<String, Assignment>()
+    private var _meet: MutableMap<String, Meeting> = mutableMapOf<String, Meeting>()
+    private var _events: MutableMap<String, Event> = mutableMapOf<String, Event>()
     // TO DO: add office hours/instructor info
 
     /*
@@ -44,41 +45,39 @@ class Course : Scope {
         this.term = term
         this.db = term.db.child("courses").child(id)
         this.name = "New Course"
-//        _addDbListener()
+        _addDbListener()
     }
 
     constructor(term: Term, key: String, value: Map<String, Any>) {
         this.id = key
         this.term = term
         this.db = term.db.child("courses").child(id)
-        this.name = value["name"] as String
 
-        val events = value["events"] as Map<String, Map<String, Any>>
-        for (key in events.keys) {
-            val event = events[key]?.let { Event(this, key, it) }
-            if (event != null) this._events.put(key, event)
-        }
+        this._name = value["name"] as String
+        val eventsInfo = value["events"] as Map<String, Map<String, Any>>?
+        if (eventsInfo != null)
+            for (pair in eventsInfo) {
+                val event = Event(this, pair.key, pair.value)
+                this._events.put(event.id, event)
+            }
 
-        val assigns = value["assign"] as Map<String, Map<String, Any>>
-        for (key in assigns.keys) {
-            val assign = assigns[key]?.let { Assignment(this, key, it) }
-            if (assign != null) this._assign.put(key, assign)
-        }
+        val assignInfo = value["assign"] as Map<String, Map<String, Any>>?
+        if (assignInfo != null)
+            for (pair in assignInfo) {
+                val assign = Assignment(this, pair.key, pair.value)
+                this._assign.put(assign.id, assign)
+            }
 
-        val meets = value["meet"] as Map<String, Map<String, Any>>
-        for (key in meets.keys) {
-            val meet = meets[key]?.let { Meeting(this, key, it) }
-            if (meet != null) this._meet.put(key, meet)
-        }
-//        _addDbListener()
+        val meetInfo = value["meet"] as Map<String, Map<String, Any>>?
+        if (meetInfo != null)
+            for (pair in meetInfo) {
+                val meet = Meeting(this, pair.key, pair.value)
+                this._meet.put(meet.id, meet)
+            }
+        _addDbListener()
     }
 
     /* Getters and Setters */
-    /*
-     * Add Assignment:
-     * @params: None
-     * @return: Assignment object added if successful. Otherwise null.
-     */
     fun addAssign(): Assignment {
         val event: Event = Event(this)
         _events.put(event.id, event)
@@ -87,11 +86,6 @@ class Course : Scope {
         return assign
     }
 
-    /*
-     * Remove Course:
-     * @params: id: String - key id for course
-     * @return: Course object removed if successful. Otherwise null
-     */
     fun removeAssign(assign: Assignment): Assignment? {
         db.child("assign").child(assign.id).removeValue()
         db.child("events").child(assign.eventId).removeValue()
@@ -112,32 +106,12 @@ class Course : Scope {
         return _meet.remove(id)
     }
 
-    /*
-     * Add Deadline/Duration Event:
-     * @params: None
-     * @return: Event object added if successful. Otherwise null.
-     */
-    /*
-     * Add Deadline/Duration Event:
-     * @params:
-     * @return: Event object added if successful. Otherwise null.
-     */
-
-    fun getEvent(key: String): Event? {
-        return _events[key]
-    }
-
     fun addEvent(): Event {
         val event: Event = Event(this)
         _events.put(event.id, event)
         return event
     }
 
-    /*
-     * Remove Event:
-     * @params: id: String - key id for event
-     * @return: Event object removed if successful. Otherwise null.
-     */
     fun removeEvent(event: Event): Event? {
         db.child("events").child(event.id).removeValue()
         return _events.remove(id)
@@ -147,7 +121,7 @@ class Course : Scope {
         db.child("name").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != name) name = value
+                if (value != null && value != _name) _name = value
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
@@ -158,19 +132,19 @@ class Course : Scope {
         db.child("events").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_events.keys).isNotEmpty() ||
-                    _events.keys.minus(value!!.keys).isNotEmpty()
+                if (value == null)
+                    _events.clear()
+                else if (value.keys.minus(_events.keys).isNotEmpty() ||
+                    _events.keys.minus(value.keys).isNotEmpty()
                 ) {
                     val add: Set<String> = value.keys.minus(_events.keys)
-                    val rem: Set<String> = _events.keys.minus(value.keys)
-
                     for (key in add) {
-                        val event = value[key]?.let { Event(this@Course, key, it) }
-                        if (event != null) _events.put(key, event)
+                        val event = Event(this@Course, key, value[key]!!)
+                        _events.put(event.id, event)
                     }
 
-                    for (key in rem)
-                        _events.remove(key)
+                    val rem: Set<String> = _events.keys.minus(value.keys)
+                    for (key in rem) _events.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -182,19 +156,19 @@ class Course : Scope {
         db.child("assign").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_assign.keys).isNotEmpty() ||
-                    _assign.keys.minus(value!!.keys).isNotEmpty()
+                if (value == null)
+                    _assign.clear()
+                else if (value.keys.minus(_assign.keys).isNotEmpty() ||
+                    _assign.keys.minus(value.keys).isNotEmpty()
                 ) {
                     val add: Set<String> = value.keys.minus(_assign.keys)
-                    val rem: Set<String> = _assign.keys.minus(value.keys)
-
                     for (key in add) {
-                        val assign = value[key]?.let { Assignment(this@Course, key, it) }
-                        if (assign != null) _assign.put(key, assign)
+                        val assign = Assignment(this@Course, key, value[key]!!)
+                        _assign.put(assign.id, assign)
                     }
 
-                    for (key in rem)
-                        _assign.remove(key)
+                    val rem: Set<String> = _assign.keys.minus(value.keys)
+                    for (key in rem) _assign.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -206,19 +180,19 @@ class Course : Scope {
         db.child("meet").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_meet.keys).isNotEmpty() ||
-                    _meet.keys.minus(value!!.keys).isNotEmpty()
+                if (value == null)
+                    _meet.clear()
+                else if (value.keys.minus(_meet.keys).isNotEmpty() ||
+                    _meet.keys.minus(value.keys).isNotEmpty()
                 ) {
                     val add: Set<String> = value.keys.minus(_meet.keys)
-                    val rem: Set<String> = _meet.keys.minus(value.keys)
-
                     for (key in add) {
-                        val meet = value[key]?.let { Meeting(this@Course, key, it) }
-                        if (meet != null) _meet.put(key, meet)
+                        val meet = Meeting(this@Course, key, value[key]!!)
+                        _meet.put(meet.id, meet)
                     }
 
-                    for (key in rem)
-                        _meet.remove(key)
+                    val rem: Set<String> = _meet.keys.minus(value.keys)
+                    for (key in rem) _meet.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {

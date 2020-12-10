@@ -1,5 +1,6 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.test
 
+import android.util.Log
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.*
@@ -8,8 +9,7 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.RecurringEvent
 import java.time.LocalDateTime
 
 class FirebaseCoreTester {
-    val database = Firebase.database
-    val control = Controller("test", database)
+    val control = Controller("test")
 
     lateinit var term: Term
     lateinit var course: Course
@@ -19,12 +19,12 @@ class FirebaseCoreTester {
     lateinit var recur: RecurringEvent
 
     fun runTest(counter: Int) {
-        when (counter%10) {
+        when (counter) {
             0 -> {
                 term = control.addTerm()
                 term.name = "Fall 2020"
-                term.setStart(LocalDateTime.of(2020, 10, 1, 0, 0, 0))
-                term.setEnd(LocalDateTime.of(2020, 12, 17, 0, 0, 0))
+                term.start = LocalDateTime.of(2020, 10, 1, 0, 0, 0)
+                term.end = LocalDateTime.of(2020, 12, 17, 0, 0, 0)
                 course = term.addCourse()
                 event = term.addEvent()
             }
@@ -47,7 +47,7 @@ class FirebaseCoreTester {
             4 -> {
                 assign = course.addAssign()
                 assign.name = "Final Project"
-                event = assign.event!!
+                event = assign.event
 
                 assign.options.weight = 0.4F
                 assign.options.complete = false
@@ -63,17 +63,41 @@ class FirebaseCoreTester {
             }
             7 -> {
                 meet = course.addMeet()
-                event = meet.event!!
+                event = meet.event
                 meet.name = "Section"
                 meet.options.mandatory = true
             }
             8 -> {
+                // Manually Add Event to Course
+                Log.d("CoreTester", "Added Event to Course | Course.events.size = ${course.events.size}")
+                // Manually Remove Options from Meeting
+                Log.d("CoreTester", "Remove Options from Meeting | Meeting.options = ${meet.options.mandatory.toString()}")
+            }
+            9 -> {
                 course.removeMeet(meet)
                 course.removeAssign(assign)
             }
-            9 -> {
+            10 -> {
                 control.removeTerm(term)
             }
         }
     }
+
+//    fun runTest(counter: Int) {
+//        when (counter) {
+//            0 -> {
+//                term = control.addTerm()
+//                term.name = "Fall 2020"
+//                term.start = LocalDateTime.of(2020, 10, 1, 0, 0, 0)
+//                term.end = LocalDateTime.of(2020, 12, 17, 0, 0, 0)
+//                event = term.addEvent()
+//            }
+//            1 -> {
+//                event = term.events[event.id]!!
+//                Log.d("CoreTester", "Event Name: ${event.name}")
+//                Log.d("CoreTester", "Event Start: ${event.start.toString()}")
+//                Log.d("CoreTester", "Event End: ${event.end.toString()}")
+//            }
+//        }
+//    }
 }

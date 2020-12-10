@@ -12,135 +12,92 @@ import java.time.LocalDateTime
 class Term : Scope {
     val TAG: String = "Term"
     override val id: String
-    override var name: String
-        get() { return field }
-        set(value: String) {
-            field = value
-            this.db.child("name").setValue(field)
-        }
     val control: Controller
     override val db: DatabaseReference
 
-    val start: Event?
+    override var name: String
+        get() { return _name }
+        set(value: String) {
+            _name = value
+            this.db.child("name").setValue(_name)
+        }
+    var start: LocalDateTime?
         get() { return _start }
-    val end: Event?
+        set(value: LocalDateTime?) {
+            _start = value
+            if (_start != null) this.db.child("start").setValue(_start.toString())
+            else this.db.child("start").removeValue()
+        }
+    var end: LocalDateTime?
         get() { return _end }
+        set(value: LocalDateTime?) {
+            _end = value
+            if (_end != null) this.db.child("end").setValue(_end.toString())
+            else this.db.child("end").removeValue()
+        }
     val courses: MutableMap<String, Course>
         get() { return _courses }
     val events: MutableMap<String, Event>
         get() { return _events }
 
-    private var _start: Event? = null
-    private var _end: Event? = null
+    private var _name: String = "New Term"
+    private var _start: LocalDateTime? = null
+    private var _end: LocalDateTime? = null
     private var _courses: MutableMap<String, Course> = mutableMapOf<String, Course>();
     private var _events: MutableMap<String, Event> = mutableMapOf<String, Event>();
 
-    /*
-     * Constructor:
-     * @params: None
-     * @return:
-     * Term object with default name "Term #" and null start and end dates.
-     */
     constructor(control: Controller) {
         this.id = Scope.randomString()
         this.control = control
         this.db = control.db.child("terms").child(id)
         this.name = "New Term"
-//        _addDbListener()
+        _addDbListener()
     }
 
     constructor(control: Controller, key: String, value: Map<String, Any>) {
         this.id = key
         this.control = control
         this.db = control.db.child("terms").child(id)
-        this.name = value["name"] as String
 
-        if (value["start"] == null) this._start = null
-        else setStart(LocalDateTime.parse(value["start"] as String))
+        this._name = value["name"] as String
+        if (value["start"] != null)
+            this._start = LocalDateTime.parse(value["start"]!! as String)
+        if (value["end"] != null)
+            this._end = LocalDateTime.parse(value["end"]!! as String)
 
-        if (value["end"] == null) this._end = null
-        else setEnd(LocalDateTime.parse(value["end"] as String))
-
-        val courses = value["courses"] as Map<String, Map<String, Any>>
-        for (key in courses.keys) {
-            val course = courses[key]?.let { Course(this, key, it) }
-            if (course != null) this._courses.put(key, course)
-        }
-
-        val events = value["events"] as Map<String, Map<String, Any>>
-        for (key in events.keys) {
-            val event = events[key]?.let { Event(this, key, it) }
-            if (event != null) this._events.put(key, event)
-        }
-
-//        _addDbListener()
-    }
-
-    fun setStart(date: LocalDateTime?) {
-        if (date == null) {
-            _start = null
-            db.child("start").removeValue()
-        } else {
-            if (_start == null) {
-                _start = Event(this)
-                _start!!.name = "Start of $name"
+        val courseInfo = value["courses"] as Map<String, Map<String, Any>>?
+        if (courseInfo != null)
+            for (pair in courseInfo) {
+                val course = Course(this, pair.key, pair.value)
+                this._courses.put(course.id, course)
             }
-            _start!!.start = date
-            db.child("start").setValue(date.toString())
-        }
-    }
 
-    fun setEnd(date: LocalDateTime?) {
-        if (date == null) {
-            _end = null
-            db.child("end").removeValue()
-        } else {
-            if (_end == null) {
-                _end = Event(this)
-                _end!!.name = "End of $name"
+        val eventsInfo = value["events"] as Map<String, Map<String, Any>>?
+        if (eventsInfo != null)
+            for (pair in eventsInfo) {
+                val event = Event(this, pair.key, pair.value)
+                this._events.put(event.id, event)
             }
-            _end!!.start = date
-            db.child("end").setValue(date.toString())
-        }
+        _addDbListener()
     }
 
-    /*
-     * Add Course:
-     * @params: None
-     * @return: Course object added if successful. Otherwise null.
-     */
     fun addCourse(): Course {
         val course: Course = Course(this)
         _courses.put(id, course)
         return course
     }
 
-    /*
-     * Remove Course:
-     * @params: id: String - key id for course
-     * @return: Course object removed if successful. Otherwise null
-     */
     fun removeCourse(course: Course): Course? {
         db.child("courses").child(course.id).removeValue()
         return _courses.remove(id)
     }
 
-    /*
-     * Add Deadline/Duration Event:
-     * @params:
-     * @return: Event object added if successful. Otherwise null.
-     */
     fun addEvent(): Event {
         val event: Event = Event(this)
         _events.put(event.id, event)
         return event
     }
 
-    /*
-     * Remove Event:
-     * @params: id: String - key id for event
-     * @return: Event object removed if successful. Otherwise null.
-     */
     fun removeEvent(event: Event): Event? {
         db.child("events").child(event.id).removeValue()
         return _events.remove(id)
@@ -150,7 +107,7 @@ class Term : Scope {
         db.child("name").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != name) name = value
+                if (value != null && value != _name) _name = value
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
@@ -161,8 +118,8 @@ class Term : Scope {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
                 if (value != null && _start == null ||
-                    value != null && value != _start!!.start.toString())
-                    setStart(LocalDateTime.parse(value))
+                    value != null && value != _start!!.toString())
+                    _start = LocalDateTime.parse(value)
                 else if (value == null && _start != null)
                     _start = null
             }
@@ -175,8 +132,8 @@ class Term : Scope {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
                 if (value != null && _end == null ||
-                    value != null && value != _end!!.start.toString())
-                    setEnd(LocalDateTime.parse(value))
+                    value != null && value != _end!!.toString())
+                    _end = LocalDateTime.parse(value)
                 else if (value == null && _end != null)
                     _end = null
             }
@@ -189,18 +146,19 @@ class Term : Scope {
         db.child("courses").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_courses.keys).size != 0 ||
-                    _courses.keys.minus(value!!.keys).size != 0) {
+                if (value == null)
+                    _courses.clear()
+                else if (value.keys.minus(_courses.keys).isNotEmpty() ||
+                    _courses.keys.minus(value.keys).isNotEmpty()
+                ) {
                     val add: Set<String> = value.keys.minus(_courses.keys)
-                    val rem: Set<String> = _courses.keys.minus(value.keys)
-
                     for (key in add) {
-                        val course = value[key]?.let { Course(this@Term, key, it) }
-                        if (course != null) _courses.put(key, course)
+                        val course = Course(this@Term, key, value[key]!!)
+                        _courses.put(course.id, course)
                     }
 
-                    for (key in rem)
-                        _courses.remove(key)
+                    val rem: Set<String> = _courses.keys.minus(value.keys)
+                    for (key in rem) _courses.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -212,19 +170,19 @@ class Term : Scope {
         db.child("events").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<Map<String, Map<String, Any>>>()
-                if (value!!.keys.minus(_events.keys).isNotEmpty() ||
-                    _events.keys.minus(value!!.keys).isNotEmpty()
+                if (value == null)
+                    _events.clear()
+                else if (value.keys.minus(_events.keys).isNotEmpty() ||
+                    _events.keys.minus(value.keys).isNotEmpty()
                 ) {
                     val add: Set<String> = value.keys.minus(_events.keys)
-                    val rem: Set<String> = _events.keys.minus(value.keys)
-
                     for (key in add) {
-                        val event = value[key]?.let { Event(this@Term, key, it) }
-                        if (event != null) _events.put(key, event)
+                        val event = Event(this@Term, key, value[key]!!)
+                        _events.put(key, event)
                     }
 
-                    for (key in rem)
-                        _events.remove(key)
+                    val rem: Set<String> = _events.keys.minus(value.keys)
+                    for (key in rem) _events.remove(key)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
