@@ -25,7 +25,7 @@ class DailyEvent : RecurringEvent {
             _end = value
             db.child("end").setValue(_end)
         }
-    val canceled: MutableSet<LocalDateTime>
+    override val canceled: MutableSet<LocalDateTime>
         get () { return _canceled }
 
     private var _start: LocalDateTime = LocalDateTime.now()

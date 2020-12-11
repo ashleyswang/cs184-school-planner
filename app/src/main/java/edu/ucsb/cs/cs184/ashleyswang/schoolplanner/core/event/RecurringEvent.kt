@@ -10,6 +10,7 @@ interface RecurringEvent {
     var end: LocalDateTime?
     val event: Event
     val type: String
+    val canceled: MutableSet<LocalDateTime>
 
     /* Returns next event based on today's date */
     fun getNextDate(): LocalDateTime?
