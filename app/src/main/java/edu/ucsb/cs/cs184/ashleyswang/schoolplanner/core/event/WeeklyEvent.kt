@@ -26,7 +26,7 @@ class WeeklyEvent : RecurringEvent {
             _end = value
             db.child("end").setValue(_end.toString())
         }
-    val canceled: MutableSet<LocalDateTime>
+    override val canceled: MutableSet<LocalDateTime>
         get() { return _canceled }
     val days: MutableSet<DayOfWeek>
         get() { return _days }
