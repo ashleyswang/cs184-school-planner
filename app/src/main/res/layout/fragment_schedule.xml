@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".ui.schedule.ScheduleFragment">
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_course"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:backgroundTint="@color/design_default_color_background">
+    </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
     <TextView
         android:id="@+id/text_notifications"
         android:layout_width="match_parent"

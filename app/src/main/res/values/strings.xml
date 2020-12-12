@@ -4,4 +4,22 @@
     <string name="title_calendar">Calendar</string>
     <string name="title_terms">Terms</string>
     <string name="title_schedule">Schedule</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- FOR FORMS -->
+    <string name="add_new_term">Add New Term</string>
+    <string name="add_new_course">Add New Course</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="title_activity_term_form">TermFormActivity</string>
+    <string name="title_activity_course_form">CourseFormActivity</string>
+    <string name="title_activity_deadline_form">DeadlineFormActivity</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+
+
 </resources>

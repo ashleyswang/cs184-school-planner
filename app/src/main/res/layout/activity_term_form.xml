@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.terms.TermFormActivity">
+
+    <Button
+        android:id="@+id/cancel"
+        android:text="@string/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/NewTermTitle"
+        app:layout_constraintTop_toTopOf="parent">
+    </Button>
+
+    <TextView
+        android:id="@+id/NewTermTitle"
+        android:text="@string/add_new_term"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/cancel"
+        app:layout_constraintRight_toLeftOf="@id/done">
+    </TextView>
+
+    <Button
+        android:id="@+id/done"
+        android:text="@string/btn_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/NewTermTitle"
+        app:layout_constraintRight_toRightOf="parent">
+    </Button>
+
+    <EditText
+        android:id="@+id/term_title"
+        android:hint="Enter term name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/NewTermTitle"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+    </EditText>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,16 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.deadlines
 
+import android.content.Intent
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms.TermFormActivity
 
 class DeadlinesFragment : Fragment() {
 
@@ -20,7 +24,20 @@ class DeadlinesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_deadlines, container, false)
+        val root = inflater.inflate(R.layout.fragment_deadlines, container, false)
+
+        val fab: FloatingActionButton = root.findViewById(R.id.add_deadline)
+        fab.setImageResource(R.drawable.ic_add_24px)
+        fab.setOnClickListener {
+
+            //define a new Intent for the second Activity
+            val intent = Intent(context, DeadlineFormActivity::class.java)
+
+            //start the second Activity
+            this.startActivity(intent)
+        }
+
+        return root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
