@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

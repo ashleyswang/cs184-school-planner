@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms.dummy
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses.dummy
 
 import java.util.ArrayList
 import java.util.HashMap

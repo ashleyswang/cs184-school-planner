@@ -5,9 +5,9 @@
         android:icon="@drawable/ic_calendar_24px"
         android:title="Calendar" />
     <item
-        android:id="@+id/navigation_terms"
+        android:id="@+id/navigation_courses"
         android:icon="@drawable/ic_terms_24px"
-        android:title="Terms" />
+        android:title="Courses" />
     <item
         android:id="@+id/navigation_schedule"
         android:icon="@drawable/ic_schedule_24px"

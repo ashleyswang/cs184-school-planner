@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_calendar" />
 
     <fragment
-        android:id="@+id/navigation_terms"
-        android:name="edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms.TermsFragment"
-        android:label="@string/title_terms"
-        tools:layout="@layout/fragment_terms" />
+        android:id="@+id/navigation_courses"
+        android:name="edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses.CoursesFragment"
+        android:label="@string/title_courses"
+        tools:layout="@layout/fragment_courses" />
 
     <fragment
         android:id="@+id/navigation_schedule"

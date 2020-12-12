@@ -16,7 +16,7 @@
             android:name=".ui.schedule.CourseFormActivity"
             android:label="@string/title_activity_course_form"></activity>
         <activity
-            android:name=".ui.terms.TermFormActivity"
+            android:name=".ui.courses.TermFormActivity"
             android:label="@string/title_activity_term_form" />
         <activity android:name=".MainActivity">
             <intent-filter>

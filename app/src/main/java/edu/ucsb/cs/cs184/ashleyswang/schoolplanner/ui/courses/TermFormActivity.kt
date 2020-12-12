@@ -1,7 +1,5 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -16,7 +14,7 @@ class TermFormActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_term_form)
+        setContentView(R.layout.activity_form_term)
 
         val userId = intent.getStringExtra("userId")!!
         controller = Controller(userId)

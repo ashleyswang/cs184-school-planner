@@ -12,7 +12,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.terms.TermFormActivity
 
 class ScheduleFragment : Fragment() {
 

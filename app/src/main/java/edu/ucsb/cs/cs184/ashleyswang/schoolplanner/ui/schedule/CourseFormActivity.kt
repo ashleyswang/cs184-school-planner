@@ -1,6 +1,5 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.schedule
 
-import android.app.Activity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -16,7 +15,7 @@ class CourseFormActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_course_form)
+        setContentView(R.layout.activity_form_course)
 
         val userId = intent.getStringExtra("userId")!!
         val termId = intent.getStringExtra("termId")!!

@@ -1,6 +1,9 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner
 
 import android.os.Bundle
+import android.service.controls.Control
+import android.view.Window
+import android.view.WindowManager
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -10,11 +13,12 @@ import androidx.appcompat.app.AppCompatActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 
 class MainActivity : AppCompatActivity() {
+
+    var controller: Controller = Controller("test")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        //val control = Controller("test")
 
         val navView: BottomNavigationView = findViewById(R.id.navigation)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -22,10 +26,9 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_calendar, R.id.navigation_terms, R.id.navigation_schedule, R.id.navigation_deadlines
+                R.id.navigation_calendar, R.id.navigation_courses, R.id.navigation_schedule, R.id.navigation_deadlines
             )
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
 }
