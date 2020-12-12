@@ -1,7 +1,7 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

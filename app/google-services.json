@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "167317427267",
+    "project_id": "cs184-schoolplanner",
+    "storage_bucket": "cs184-schoolplanner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167317427267:android:d4627c65114632d45ef0f6",
+        "android_client_info": {
+          "package_name": "edu.ucsb.cs.cs184.ashleyswang.schoolplanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "167317427267-qaag651ad6hja2jb9hbr18nk2da4uunr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD546JZsW1gVc2JnpkIdAIb9NST9IPxbQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "167317427267-qaag651ad6hja2jb9hbr18nk2da4uunr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
