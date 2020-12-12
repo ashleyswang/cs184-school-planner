@@ -56,7 +56,7 @@
         app:layout_constraintRight_toRightOf="parent">
 
         <Spinner
-            android:id="@+id/term_dropdown"
+            android:id="@+id/course_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
@@ -64,11 +64,11 @@
         </Spinner>
 
         <EditText
-            android:id="@+id/term_title"
+            android:id="@+id/course_title"
             android:hint="Enter course name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/term_dropdown"
+            app:layout_constraintTop_toBottomOf="@id/course_dropdown"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintLeft_toLeftOf="parent">
         </EditText>

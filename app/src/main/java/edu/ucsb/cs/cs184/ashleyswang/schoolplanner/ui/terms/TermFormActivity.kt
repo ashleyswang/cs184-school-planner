@@ -8,29 +8,43 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 
 class TermFormActivity : AppCompatActivity() {
+
+    private lateinit var controller: Controller
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_term_form)
 
-        Log.d("hello", "in form activity")
-
-        val intent = intent
-        var finished: Boolean = false
-
-        val editTitle: EditText = this.findViewById(R.id.term_title)
-        val termTitle: String = editTitle.text.toString()
+        val userId = intent.getStringExtra("userId")!!
+        controller = Controller(userId)
 
         // go back to terms fragment when done button is clicked
-        val done_btn: Button = this.findViewById(R.id.done)
-        done_btn.setOnClickListener {
-//            finished = true
-//            intent.putExtra("finished", finished)
-//            intent.putExtra("title", termTitle)
-            setResult(Activity.RESULT_OK, intent);
+        val doneBtn: Button = this.findViewById(R.id.done)
+        doneBtn.setOnClickListener {
+            addTerm()
             finish()
         }
+
+        val cancelBtn: Button = this.findViewById(R.id.cancel)
+        cancelBtn.setOnClickListener {
+            finish()
+        }
+    }
+
+    fun addTerm() {
+        val term = controller.addTerm()
+        val title: EditText = this.findViewById(R.id.term_title)
+        val startDate: EditText = this.findViewById(R.id.term_start)
+        val endDate: EditText = this.findViewById(R.id.term_end)
+        var titleValue = title.text
+        var start = startDate.text
+        var end = endDate.text
+        Log.d("date", start.toString())
+        Log.d("date", end.toString())
+
+        term.name = titleValue.toString()
     }
 }

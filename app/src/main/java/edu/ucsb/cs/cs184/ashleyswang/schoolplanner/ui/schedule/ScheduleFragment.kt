@@ -33,6 +33,7 @@ class ScheduleFragment : Fragment() {
         fab.setOnClickListener {
             //define a new Intent for the second Activity
             val intent = Intent(context, CourseFormActivity::class.java)
+            intent.putExtra("userId", "test")
 
             //start the second Activity
             this.startActivity(intent)
