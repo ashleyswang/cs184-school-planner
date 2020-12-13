@@ -115,6 +115,10 @@ class CoursesFragment : Fragment() {
 
     private fun getTermsList() {
         termsList = arrayListOf<Term>()
+        if (controller.terms.size == 0) {
+            var defaultTerm = controller.addTerm()
+            defaultTerm.name = "Default Term"
+        }
         termsList.addAll(controller.terms.values)
         termsList.sortBy { it.start.toString() }
     }

@@ -3,6 +3,7 @@
     package="edu.ucsb.cs.cs184.ashleyswang.schoolplanner">
 
     <application
+        android:name=".other.notifications.AppNotificationChannel"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -25,6 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver android:name=".other.notifications.NotificationsBroadcastReceiver"/>
     </application>
 
 </manifest>
