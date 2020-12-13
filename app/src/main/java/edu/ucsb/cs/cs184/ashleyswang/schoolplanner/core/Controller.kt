@@ -11,16 +11,16 @@ class Controller {
     val TAG: String = "Controller"
     val user: String
     val db: DatabaseReference
-    var currId: String?
-        get() { return _currId }
+    var default: String?
+        get() { return _default }
         set(value) {
-            _currId = value
-            db.child("currId").setValue(_currId)
+            _default = value
+            db.child("default").setValue(_default)
         }
     val terms: MutableMap<String, Term>
         get() { return _terms }
 
-    private var _currId: String? = null
+    private var _default: String? = null
     private var _terms: MutableMap<String, Term> = mutableMapOf<String, Term>();
 
     constructor(user: String) {
@@ -37,14 +37,15 @@ class Controller {
 
     fun removeTerm(term: Term): Term? {
         db.child("terms").child(term.id).removeValue()
+        if (term.id == default) default = null
         return _terms.remove(term.id)
     }
 
     private fun _addDbListener() {
-        db.child("currId").addValueEventListener(object : ValueEventListener {
+        db.child("default").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != _currId) _currId = value
+                if (value != _default) _default = value
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read terms.", error.toException())

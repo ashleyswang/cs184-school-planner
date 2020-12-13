@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 class Term : Scope {
     val TAG: String = "Term"
     override val id: String
-    val control: Controller
+    val controller: Controller
     override val db: DatabaseReference
 
     override var name: String
@@ -21,49 +21,55 @@ class Term : Scope {
             _name = value
             this.db.child("name").setValue(_name)
         }
-    var start: LocalDateTime?
+    var start: LocalDateTime
         get() { return _start }
-        set(value: LocalDateTime?) {
+        set(value: LocalDateTime) {
             _start = value
-            if (_start != null) this.db.child("start").setValue(_start.toString())
-            else this.db.child("start").removeValue()
+            this.db.child("start").setValue(_start.toString())
         }
-    var end: LocalDateTime?
+    var end: LocalDateTime
         get() { return _end }
-        set(value: LocalDateTime?) {
+        set(value: LocalDateTime) {
             _end = value
-            if (_end != null) this.db.child("end").setValue(_end.toString())
-            else this.db.child("end").removeValue()
+            this.db.child("end").setValue(_end.toString())
         }
     val courses: MutableMap<String, Course>
         get() { return _courses }
     val events: MutableMap<String, Event>
         get() { return _events }
+    val createdOn: LocalDateTime
+        get() { return _createdOn }
 
     private var _name: String = "New Term"
-    private var _start: LocalDateTime? = null
-    private var _end: LocalDateTime? = null
+    private var _start: LocalDateTime = LocalDateTime.now()
+    private var _end: LocalDateTime = LocalDateTime.now()
     private var _courses: MutableMap<String, Course> = mutableMapOf<String, Course>();
     private var _events: MutableMap<String, Event> = mutableMapOf<String, Event>();
+    private var _createdOn: LocalDateTime = LocalDateTime.now()
 
-    constructor(control: Controller) {
+    constructor(controller: Controller) {
         this.id = Scope.randomString()
-        this.control = control
-        this.db = control.db.child("terms").child(id)
+        this.controller = controller
+        this.db = controller.db.child("terms").child(id)
         this.name = "New Term"
+        this.start = LocalDateTime.now()
+        this.end = LocalDateTime.now()
+        this.db.child("createdOn").setValue(createdOn.toString())
         _addDbListener()
     }
 
-    constructor(control: Controller, key: String, value: Map<String, Any>) {
+    constructor(controller: Controller, key: String, value: Map<String, Any>) {
         this.id = key
-        this.control = control
-        this.db = control.db.child("terms").child(id)
+        this.controller = controller
+        this.db = controller.db.child("terms").child(id)
 
         this._name = value["name"] as String
         if (value["start"] != null)
             this._start = LocalDateTime.parse(value["start"]!! as String)
         if (value["end"] != null)
             this._end = LocalDateTime.parse(value["end"]!! as String)
+        if (value["createdOn"] != null)
+            this._createdOn = LocalDateTime.parse(value["createdOn"]!! as String)
 
         val courseInfo = value["courses"] as Map<String, Map<String, Any>>?
         if (courseInfo != null)
@@ -116,12 +122,9 @@ class Term : Scope {
 
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<String?>()
-                if (value != null && _start == null ||
-                    value != null && value != _start!!.toString())
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _start.toString())
                     _start = LocalDateTime.parse(value)
-                else if (value == null && _start != null)
-                    _start = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -130,12 +133,20 @@ class Term : Scope {
 
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<String?>()
-                if (value != null && _end == null ||
-                    value != null && value != _end!!.toString())
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _end.toString())
                     _end = LocalDateTime.parse(value)
-                else if (value == null && _end != null)
-                    _end = null
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("createdOn").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _createdOn.toString())
+                    _createdOn = LocalDateTime.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

@@ -7,7 +7,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="TermsToolbar" parent="ThemeOverlay.AppCompat.ActionBar">
-        <item name="android:textColorSecondary">@color/white</item>
+    <style name="AppBaseTheme" parent="android:Theme.Material.Light">
+        <item name="android:datePickerDialogTheme">@style/TermsDatePicker</item>
     </style>
+
+    <style name="TermsDatePicker" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:colorAccent">@color/medGrey</item>
+        <item name="android:textSize">@dimen/datepicker_header_size</item>
+    </style>
+
 </resources>

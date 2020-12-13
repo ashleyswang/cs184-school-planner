@@ -21,7 +21,7 @@
     -->
     <string name="hello_world">Hello Square World!</string>
     <string name="courses_default_text">Add a school term to get started.</string>
-    <string name="courses_default_btnText">Add Term</string>
+    <string name="courses_default_btnText">  Add Term</string>
 
 
 </resources>

@@ -6,69 +6,179 @@
     android:layout_height="match_parent"
     tools:context=".ui.courses.TermFormActivity">
 
-    <Button
-        android:id="@+id/cancel"
-        android:text="@string/btn_cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/NewTermTitle"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/term_form_header"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/lightGrey"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-    </Button>
+
+        <ImageButton
+            android:id="@+id/term_form_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGrey"
+            android:padding="15dp"
+            android:src="@drawable/ic_close_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/term_form_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGrey"
+            android:padding="15dp"
+            android:src="@drawable/ic_check_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
-        android:id="@+id/NewTermTitle"
-        android:text="@string/add_new_term"
+        android:id="@+id/term_name_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/cancel"
-        app:layout_constraintRight_toLeftOf="@id/done">
-    </TextView>
-
-    <Button
-        android:id="@+id/done"
-        android:text="@string/btn_done"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/NewTermTitle"
-        app:layout_constraintRight_toRightOf="parent">
-    </Button>
+        android:layout_marginVertical="15dp"
+        android:text="Term Name"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/term_name"
+        app:layout_constraintTop_toBottomOf="@+id/term_form_header" />
 
     <EditText
-        android:id="@+id/term_title"
-        android:hint="Enter term name"
+        android:id="@+id/term_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="25dp"
+        android:hint="New Term"
+        android:textSize="22sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/term_name_label" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/term_name" />
+
+    <TextView
+        android:id="@+id/term_start_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/NewTermTitle"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-    </EditText>
+        android:layout_marginTop="15dp"
+        android:text="Start Date"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/term_name"
+        app:layout_constraintTop_toTopOf="@+id/divider" />
 
     <EditText
         android:id="@+id/term_start"
+        android:layout_width="150dp"
+        android:layout_height="45dp"
+        android:ems="10"
+        android:hint="MM/DD/YYYY"
+        android:inputType="none"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/term_name"
+        app:layout_constraintTop_toBottomOf="@+id/term_start_label" />
+
+    <TextView
+        android:id="@+id/term_end_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="date"
-        tools:layout_editor_absoluteX="204dp"
-        tools:layout_editor_absoluteY="489dp"
-        app:layout_constraintTop_toBottomOf="@id/term_title"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        android:text="End Date"
+        android:textSize="14dp"
+        app:layout_constraintStart_toStartOf="@+id/term_end"
+        app:layout_constraintTop_toTopOf="@+id/term_start_label" />
 
     <EditText
         android:id="@+id/term_end"
+        android:layout_width="150dp"
+        android:layout_height="45dp"
+        android:ems="10"
+        android:hint="MM/DD/YYYY"
+        android:inputType="none"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/term_name"
+        app:layout_constraintTop_toBottomOf="@+id/term_end_label" />
+
+    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+    <!--        android:id="@+id/term_form_datepicker_layout"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/term_start"-->
+    <!--        app:layout_constraintVertical_bias="0.2">-->
+
+    <!--        <DatePicker-->
+    <!--            android:id="@+id/term_form_datepicker"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:datePickerMode="calendar"-->
+    <!--            android:paddingBottom="15dp"-->
+    <!--            app:layout_constraintEnd_toEndOf="parent"-->
+    <!--            app:layout_constraintStart_toStartOf="parent"-->
+    <!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+    <!--        <Button-->
+    <!--            android:id="@+id/term_form_datepicker_confirm"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:background="@drawable/custom_round_button"-->
+    <!--            android:text="Save"-->
+    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--            app:layout_constraintEnd_toEndOf="@+id/datePicker" />-->
+
+    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+    <Button
+        android:id="@+id/term_form_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="date"
-        tools:layout_editor_absoluteX="204dp"
-        tools:layout_editor_absoluteY="489dp"
-        app:layout_constraintTop_toBottomOf="@id/term_start"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/custom_round_button"
+        android:backgroundTint="@android:color/transparent"
+        android:drawableLeft="@drawable/ic_delete_24"
+        android:drawableTint="@color/warning"
+        android:gravity="center_vertical"
+        android:outlineAmbientShadowColor="@color/cardview_shadow_start_color"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="15dp"
+        android:text="  Delete Term"
+        android:textColor="@color/warning"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/term_form_curr_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Set As Current Term"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/term_name"
+        app:layout_constraintTop_toBottomOf="@+id/term_start" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/term_form_curr_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@+id/term_end"
+        app:layout_constraintTop_toTopOf="@+id/term_form_curr_label" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
