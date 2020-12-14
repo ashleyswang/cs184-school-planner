@@ -4,32 +4,20 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.getSystemService
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.MainActivity
+import com.google.firebase.database.ValueEventListener
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import java.util.*
 
 class Notifications {
     companion object {
 
-        fun sendOnChannel(
+        fun setNotification(
             title: String,
             content: String,
-            time: LocalDateTime,
+            timestamp: Int,
+            notificationTime: Long,
             id: String,
             context: Context
         ) {
@@ -48,18 +36,21 @@ class Notifications {
             val intent = Intent(context, Notifications::class.java)
             intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, id)
             intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_MESSAGE, notification)
-            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+            val pendingIntent = PendingIntent.getBroadcast(context, timestamp, intent, 0)
 
             val alarmManager =
                 context.getSystemService(AppCompatActivity.ALARM_SERVICE) as AlarmManager
 
-            val zonedDateTime: ZonedDateTime = time.atZone(TimeZone.getDefault().toZoneId())
+            //val zonedDateTime: ZonedDateTime = notificationTime.atZone(TimeZone.getDefault().toZoneId())
+            //val timeInMillis: Long = time.toLong() * 1000
 
             alarmManager.set(
                 AlarmManager.RTC_WAKEUP,
-                zonedDateTime.toInstant().toEpochMilli(),
+                //timeInMillis,
+                notificationTime,
+                //zonedDateTime.toInstant().toEpochMilli(),
                 pendingIntent
-            );
+            )
         }
     }
 }
