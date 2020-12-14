@@ -1,5 +1,6 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
+import android.content.Context
 import android.util.Log
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
@@ -26,6 +27,7 @@ class Controller {
     constructor(user: String) {
         this.user = user
         this.db = Firebase.database.getReference("core").child(user)
+        Log.d("Controller", "created controller and put into database with user: " + user)
         _addDbListener()
     }
 

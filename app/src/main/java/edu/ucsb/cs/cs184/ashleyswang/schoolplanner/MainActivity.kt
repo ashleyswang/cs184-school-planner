@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,8 +23,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
-
-    var controller: Controller = Controller("beepboop")
+    private lateinit var acct: GoogleSignInAccount
+    lateinit var controller: Controller
     private lateinit var termEventsPointer: DatabaseReference
     private lateinit var termsPointer: DatabaseReference
     var courseEventsList: ArrayList<DatabaseReference> = arrayListOf()
@@ -30,7 +32,23 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        var isGoogleSignIn = intent.getBooleanExtra("isGoogleSignIn", false)
+        var user: String? =  intent.getStringExtra("user")
+        Log.d(MainActivity::class.qualifiedName, "user: " + user)
+        if (isGoogleSignIn) {
+            acct = GoogleSignIn.getLastSignedInAccount(this)!!
+            if (acct != null) {
+                controller = Controller(acct!!.id.toString())
+            }
+        }
+        else {
+            if (user != null) {
+                controller = Controller(user!!)
+            }
+            else {
+                controller = Controller("NoUser")
+            }
+        }
         val navView: BottomNavigationView = findViewById(R.id.navigation)
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each

@@ -10,23 +10,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity"></activity>
         <activity
             android:name=".ui.deadlines.DeadlineFormActivity"
-            android:label="@string/title_activity_deadline_form"></activity>
+            android:label="@string/title_activity_deadline_form" />
         <activity
             android:name=".ui.schedule.CourseFormActivity"
-            android:label="@string/title_activity_course_form"></activity>
+            android:label="@string/title_activity_course_form" />
         <activity
             android:name=".ui.courses.TermFormActivity"
             android:label="@string/title_activity_term_form" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".LoginPage" android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".other.notifications.NotificationsBroadcastReceiver"/>
+
+        <receiver android:name=".other.notifications.NotificationsBroadcastReceiver" />
     </application>
 
 </manifest>
