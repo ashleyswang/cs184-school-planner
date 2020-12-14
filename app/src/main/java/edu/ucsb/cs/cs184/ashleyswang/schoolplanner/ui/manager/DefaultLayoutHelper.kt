@@ -6,32 +6,44 @@ import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
-import kotlinx.android.synthetic.main.fragment_courses.view.*
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
 
-class CoursesDefaultHelper(
-    private val fragment: CoursesFragment,
-    private val mainLayout: ConstraintLayout,
-    private val defaultLayout: ConstraintLayout,
-    private val toolbar: Toolbar,
-    private val drawer: DrawerLayout
+class DefaultLayoutHelper(
+    private val fragment: ManagerFragment,
+    private val model: ManagerViewModel
 ) {
-    val isDefaultView: Boolean
-        get() {return _isDefaultView }
+    private val mainLayout: ConstraintLayout
+        get() { return model.mainLayout }
+    private val defaultLayout: ConstraintLayout
+        get() { return model.defaultLayout }
+    private val toolbar: Toolbar
+        get() { return model.toolbar }
+    private val drawer: DrawerLayout
+        get() { return model.drawer }
 
-    private var _isDefaultView: Boolean = false
+    private var isDefaultView: Boolean = false
 
     init {
         val defaultAdd: Button = defaultLayout.findViewById(R.id.courses_default_button)
         defaultAdd.setOnClickListener {
             fragment.openTermAdder()
-            closeDrawer()
+            drawer.close()
         }
+
+        val activeTermObserver: Observer<Term> = Observer<Term> {
+            if (model.activeTerm.value == null)
+                makeDefaultView()
+            else if (isDefaultView && model.activeTerm.value != null)
+                hideDefaultView()
+        }
+        model.activeTerm.observe(fragment.viewLifecycleOwner, activeTermObserver)
     }
 
-    fun makeDefaultView() {
-        Log.d("CoursesDefaultHelper", "in Make Default View")
-        _isDefaultView = true
+    private fun makeDefaultView() {
+        Log.d("DefaultLayoutHelper", "in Make Default View")
+        isDefaultView = true
 
         mainLayout.visibility = View.GONE
         defaultLayout.visibility = View.VISIBLE
@@ -43,7 +55,7 @@ class CoursesDefaultHelper(
         item.isVisible = false
     }
 
-    fun hideDefaultView() {
+    private fun hideDefaultView() {
         var item = toolbar.menu.findItem(R.id.terms_toolbar_mark_fav)
         item.isVisible = true
         item = toolbar.menu.findItem(R.id.terms_toolbar_edit_term)
@@ -52,14 +64,6 @@ class CoursesDefaultHelper(
         defaultLayout.visibility = View.GONE
         mainLayout.visibility = View.VISIBLE
 
-        _isDefaultView = false
-    }
-
-    fun openDrawer() {
-        drawer.open()
-    }
-
-    fun closeDrawer() {
-        drawer.close()
+        isDefaultView = false
     }
 }

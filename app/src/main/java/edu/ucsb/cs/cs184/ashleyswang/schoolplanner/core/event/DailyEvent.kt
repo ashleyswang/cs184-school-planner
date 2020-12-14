@@ -6,10 +6,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
 import java.time.LocalDateTime
 
 class DailyEvent : RecurringEvent {
     val TAG: String = "DailyEvent"
+    override val id: String = Scope.randomString()
     override val type: String = "daily"
     override val event: Event
 
@@ -19,9 +21,9 @@ class DailyEvent : RecurringEvent {
             _start = value
             db.child("start").setValue(_start)
         }
-    override var end: LocalDateTime?
+    override var end: LocalDateTime
         get() { return _end }
-        set(value: LocalDateTime?) {
+        set(value: LocalDateTime) {
             _end = value
             db.child("end").setValue(_end)
         }
@@ -29,7 +31,7 @@ class DailyEvent : RecurringEvent {
         get () { return _canceled }
 
     private var _start: LocalDateTime = LocalDateTime.now()
-    private var _end: LocalDateTime? = null
+    private var _end: LocalDateTime = LocalDateTime.MAX
     private var _canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
 
     val db: DatabaseReference
@@ -39,7 +41,7 @@ class DailyEvent : RecurringEvent {
         this.db = event.db.child("recur")
         this.db.child("type").setValue(type)
         this.start = event.start
-        this.end = null
+        this.end = LocalDateTime.MAX
         _addDbListener()
     }
 
@@ -57,6 +59,26 @@ class DailyEvent : RecurringEvent {
             for (date in cancelInfo)
                 this._canceled.add(LocalDateTime.parse(date))
         _addDbListener()
+    }
+
+    override fun generateEvents() {
+        val scope = event.scope
+        val duration = event.getDuration()
+        val dates = getDates(start, end)
+        for (d in dates) {
+            val newEvent = scope.addEvent()
+            newEvent.name = event.name
+            newEvent.start = d
+            newEvent.end = d.plus(duration)
+            newEvent.recur = event.recur
+        }
+    }
+
+    override fun removeEvents() {
+        val scope = event.scope
+        for (e in scope.events.values)
+            if (e.recur?.id == this.id)
+                scope.removeEvent(e)
     }
 
     /* Returns next event based on today's date */
@@ -87,7 +109,7 @@ class DailyEvent : RecurringEvent {
     }
 
     private fun getDateAfter(date: LocalDateTime): LocalDateTime? {
-        if (_end != null && date.isAfter(_end))
+        if (date.isAfter(_end))
             return null
         if (date.isBefore(_start))
             return _start
@@ -103,7 +125,7 @@ class DailyEvent : RecurringEvent {
             newDate = newDate.plusDays(1.toLong())
         }
 
-        return if (_end != null && newDate.isAfter(_end)) null else newDate
+        return if (newDate.isAfter(_end)) null else newDate
     }
 
     private fun _addDbListener() {
@@ -121,11 +143,8 @@ class DailyEvent : RecurringEvent {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && _end == null ||
-                    value != null && value != _end!!.toString())
+                if (value != null && value != _end!!.toString())
                     _end = LocalDateTime.parse(value)
-                else if (value == null && _end != null)
-                    _end = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

@@ -9,11 +9,13 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
@@ -23,6 +25,7 @@ import java.time.LocalDateTime
 
 class TermFormActivity : AppCompatActivity() {
 
+    val TAG: String = "TermFormActivity"
     val ACTION_ADD: Int = 0
     val ACTION_EDIT: Int = 1
     val ACTION_DEL: Int = 2

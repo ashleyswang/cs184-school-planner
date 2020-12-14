@@ -24,7 +24,7 @@ class Course : Scope {
         get() { return _assign }
     val meet: MutableMap<String, Meeting>
         get() { return _meet }
-    val events: MutableMap<String, Event>
+    override val events: MutableMap<String, Event>
         get() { return _events }
 
     private var _name: String = "New Course"
@@ -106,13 +106,13 @@ class Course : Scope {
         return _meet.remove(id)
     }
 
-    fun addEvent(): Event {
+    override fun addEvent(): Event {
         val event: Event = Event(this)
         _events.put(event.id, event)
         return event
     }
 
-    fun removeEvent(event: Event): Event? {
+    override fun removeEvent(event: Event): Event? {
         db.child("events").child(event.id).removeValue()
         return _events.remove(id)
     }

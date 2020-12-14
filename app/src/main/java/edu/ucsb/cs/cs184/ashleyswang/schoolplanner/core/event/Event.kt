@@ -38,7 +38,10 @@ class Event {
     var recur: RecurringEvent?
         get() { return _recur }
         set(value: RecurringEvent?) {
+            db.child("recurId").setValue(value?.id)
+            _recur?.removeEvents()
             _recur = value
+            _recur?.generateEvents()
         }
 
     private var _name: String = "New Event"

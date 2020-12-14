@@ -1,6 +1,7 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
 import com.google.firebase.database.DatabaseReference
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 interface Scope {
     companion object scope {
@@ -16,4 +17,8 @@ interface Scope {
     val id: String
     var name: String
     val db: DatabaseReference
+    val events: MutableMap<String, Event>
+
+    fun addEvent(): Event
+    fun removeEvent(event: Event): Event?
 }

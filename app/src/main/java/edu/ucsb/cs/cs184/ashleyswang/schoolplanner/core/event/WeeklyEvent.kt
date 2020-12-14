@@ -6,11 +6,13 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 
 class WeeklyEvent : RecurringEvent {
     val TAG: String = "WeeklyEvent"
+    override val id: String = Scope.randomString()
     override val type: String = "weekly"
     override val event: Event
 
@@ -20,9 +22,9 @@ class WeeklyEvent : RecurringEvent {
             _start = value
             db.child("start").setValue(_start.toString())
         }
-    override var end: LocalDateTime?
+    override var end: LocalDateTime
         get() { return _end }
-        set(value: LocalDateTime?) {
+        set(value: LocalDateTime) {
             _end = value
             db.child("end").setValue(_end.toString())
         }
@@ -32,7 +34,7 @@ class WeeklyEvent : RecurringEvent {
         get() { return _days }
 
     private var _start: LocalDateTime = LocalDateTime.now()
-    private var _end: LocalDateTime? = null
+    private var _end: LocalDateTime = LocalDateTime.now()
     private var _canceled: MutableSet<LocalDateTime> = mutableSetOf<LocalDateTime>()
     private var _days: MutableSet<DayOfWeek> = mutableSetOf<DayOfWeek>()
 
@@ -43,7 +45,7 @@ class WeeklyEvent : RecurringEvent {
         this.db = event.db.child("recur")
         this.db.child("type").setValue(type)
         this.start = event.start
-        this.end = null
+        this.end = LocalDateTime.of(2025, 12, 31, 23, 59, 59)
         removeDays(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
             DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
         _addDbListener()
@@ -80,6 +82,26 @@ class WeeklyEvent : RecurringEvent {
         _addDbListener()
     }
 
+    override fun generateEvents() {
+        val scope = event.scope
+        val duration = event.getDuration()
+        val dates = getDates(start, end)
+        for (d in dates) {
+            val newEvent = scope.addEvent()
+            newEvent.name = event.name
+            newEvent.start = d
+            newEvent.end = d.plus(duration)
+            newEvent.recur = event.recur
+        }
+    }
+
+    override fun removeEvents() {
+        val scope = event.scope
+        for (e in scope.events.values)
+            if (e.recur?.id == this.id)
+                scope.removeEvent(e)
+    }
+
     /* Returns next event based on today's date */
     override fun getNextDate(): LocalDateTime? {
         val current: LocalDateTime = LocalDateTime.now()
@@ -102,7 +124,6 @@ class WeeklyEvent : RecurringEvent {
         val eventDate = event.start
         val removedDate: LocalDateTime = date.withHour(eventDate.hour)
             .withMinute(eventDate.minute)
-            .withSecond(eventDate.second)
         _canceled.add(removedDate)
         db.child("canceled").child(_canceled.size.toString()).setValue(removedDate.toString())
     }
@@ -115,7 +136,6 @@ class WeeklyEvent : RecurringEvent {
         val eventDate = event.start
         var newDate: LocalDateTime = date.withHour(eventDate.hour)
             .withMinute(eventDate.minute)
-            .withSecond(eventDate.second)
 
         while (true) {
             if (newDate.isAfter(date) && _days.contains(newDate.dayOfWeek) &&
@@ -175,11 +195,8 @@ class WeeklyEvent : RecurringEvent {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && _end == null ||
-                    value != null && value != _end!!.toString())
+                if (value != null && value != _end.toString())
                     _end = LocalDateTime.parse(value)
-                else if (value == null && _end != null)
-                    _end = null
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

@@ -35,7 +35,7 @@ class Term : Scope {
         }
     val courses: MutableMap<String, Course>
         get() { return _courses }
-    val events: MutableMap<String, Event>
+    override val events: MutableMap<String, Event>
         get() { return _events }
     val createdOn: LocalDateTime
         get() { return _createdOn }
@@ -98,13 +98,13 @@ class Term : Scope {
         return _courses.remove(id)
     }
 
-    fun addEvent(): Event {
+    override fun addEvent(): Event {
         val event: Event = Event(this)
         _events.put(event.id, event)
         return event
     }
 
-    fun removeEvent(event: Event): Event? {
+    override fun removeEvent(event: Event): Event? {
         db.child("events").child(event.id).removeValue()
         return _events.remove(id)
     }

@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:visibility="gone"
-    tools:context=".ui.courses.CoursesFragment">
+    tools:context=".ui.manager.ManagerFragment">
 
         <TextView
             android:id="@+id/courses_default_textView"

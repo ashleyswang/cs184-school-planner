@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.courses.CoursesFragment">
+    tools:context=".ui.courses.ManagerFragment">
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/terms_toolbar_drawer_layout"
@@ -19,7 +19,7 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/terms_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="?android:attr/actionBarSize"
                 android:background="?attr/colorPrimary"
                 android:minHeight="?attr/actionBarSize"
                 app:titleTextColor="#FFFFFFFF"
@@ -30,14 +30,22 @@
                 />
 
             <include
-                layout="@layout/fragment_courses_default"
+                layout="@layout/courses_default"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent" />
 
-            <include
-                layout="@layout/fragment_courses_main"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_width="match_parent" />
+                android:paddingTop="?android:attr/actionBarSize">
+
+                <include
+                    layout="@layout/courses_main"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

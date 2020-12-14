@@ -5,8 +5,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -16,21 +16,27 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
 import kotlin.collections.ArrayList
 
-class CoursesNavViewHelper (
-    private val fragment: CoursesFragment,
-    private val navView: NavigationView
+class NavViewHelper (
+    private val fragment: ManagerFragment,
+    private val model: ManagerViewModel
 ) {
-    private val TAG: String = "CoursesNavViewHelper"
-    private var menu: Menu = navView.menu
+    private val TAG: String = "NavViewHelper"
 
-    private val defaultTerm: Term?
-        get() { return fragment.controller.terms[controller.default] }
-    private val controller: Controller
-        get() { return fragment.controller}
     private val view: View
-        get() { return fragment.root }
+        get() { return model.view }
+    private val menu: Menu
+        get() { return model.navView.menu}
 
-    private lateinit var termsList: ArrayList<Term>
+    private val controller: Controller
+        get() { return model.controller}
+    private val defaultTerm: Term?
+        get() { return model.controller.terms[controller.default] }
+    private var termsList: ArrayList<Term>
+        get() { return model.termsList }
+        set(value) {
+            model.termsList = value
+        }
+
     private lateinit var menuItems: MutableMap<String, MenuItem>
     private lateinit var defaultListener: ValueEventListener
     private lateinit var termsListener: ValueEventListener
@@ -46,12 +52,8 @@ class CoursesNavViewHelper (
             setNameChangeListener(term)
     }
 
-    fun getTermsList(): ArrayList<Term> {
-        return termsList
-    }
-
     private fun makeTermsList() {
-        termsList = arrayListOf<Term>()
+        termsList.clear()
         termsList.addAll(controller.terms.values)
         termsList.sortBy { it.createdOn.toString() }
     }
@@ -74,7 +76,7 @@ class CoursesNavViewHelper (
         for (t in termsList.reversed()) {
             if (t.id != term?.id) {
                 val item = prevSubMenu.add(prevTerm.groupId, Menu.NONE, Menu.NONE, t.name)
-                item.icon = fragment.resources.getDrawable(R.drawable.ic_arrow_right_24)
+                item.icon = AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_check_circle_24)
                 setTermClickListener(item, t)
                 menuItems.put(t.id, item)
             }
@@ -85,27 +87,23 @@ class CoursesNavViewHelper (
         val addTerm: MenuItem = menu.findItem(R.id.terms_toolbar_add_term)
         addTerm.setOnMenuItemClickListener {
             fragment.openTermAdder()
-            val drawer: DrawerLayout = view.findViewById(R.id.terms_toolbar_drawer_layout)
-            drawer.close()
+            model.drawer.close()
             return@setOnMenuItemClickListener true
         }
 
         val currTerm: MenuItem = menu.findItem(R.id.terms_toolbar_curr_term)
         currTerm.setOnMenuItemClickListener {
-            if (it.title != defaultTerm?.name)
-                Log.w("TAG", "Tab Title (${it.title}) and Term Name (${defaultTerm?.name}) do not match")
-            fragment.changeActiveTerm(defaultTerm!!)
-            val drawer: DrawerLayout = view.findViewById(R.id.terms_toolbar_drawer_layout)
-            drawer.close()
+            Log.w(TAG, "menu click")
+            model.activeTerm.value = defaultTerm!!
+            model.drawer.close()
             return@setOnMenuItemClickListener true
         }
     }
 
     private fun setTermClickListener(item: MenuItem, term: Term) {
         item.setOnMenuItemClickListener {
-            if (it.title != term.name)
-                Log.w("TAG", "Tab Title (${it.title}) and Term Name (${term.name}) do not match")
-            fragment.changeActiveTerm(term)
+            Log.w(TAG, "item click")
+            model.activeTerm.value = term
             val drawer: DrawerLayout = view.findViewById(R.id.terms_toolbar_drawer_layout)
             drawer.close()
             return@setOnMenuItemClickListener true
