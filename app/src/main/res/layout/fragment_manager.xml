@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.courses.ManagerFragment">
+    tools:context=".ui.manager.ManagerFragment">
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/terms_toolbar_drawer_layout"
@@ -30,7 +30,7 @@
                 />
 
             <include
-                layout="@layout/courses_default"
+                layout="@layout/manager_default_layout"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent" />
 
@@ -40,7 +40,7 @@
                 android:paddingTop="?android:attr/actionBarSize">
 
                 <include
-                    layout="@layout/courses_main"
+                    layout="@layout/manager_main_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 

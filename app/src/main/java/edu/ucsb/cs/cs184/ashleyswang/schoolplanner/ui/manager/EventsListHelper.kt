@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 class EventsListHelper(
     private val fragment: ManagerFragment,

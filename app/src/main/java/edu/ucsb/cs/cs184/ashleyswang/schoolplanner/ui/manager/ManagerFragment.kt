@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 import android.app.Activity
 import android.content.Intent
@@ -42,7 +42,7 @@ class ManagerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         model = ViewModelProvider(requireActivity()).get(ManagerViewModel::class.java)
-        model.view = inflater.inflate(R.layout.fragment_courses, container, false)
+        model.view = inflater.inflate(R.layout.fragment_manager, container, false)
         model.mainLayout = model.view.findViewById(R.id.courses_main_layout)
         model.defaultLayout = model.view.findViewById(R.id.courses_default_layout)
         model.toolbar = model.view.findViewById(R.id.terms_toolbar)

@@ -6,11 +6,11 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 xmlns:tools="http://schemas.android.com/tools"
 tools:context=".ui.manager.ManagerFragment"
-android:id="@+id/courses_main_course_layout"
+android:id="@+id/manager_main_course_layout"
 android:visibility="gone">
 
 <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/courses_main_course_view"
+    android:id="@+id/manager_main_course_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_constraintBottom_toBottomOf="parent"
@@ -22,10 +22,10 @@ android:visibility="gone">
     android:id="@+id/textView"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="Events Page"
+    android:text="Course Page"
     app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="@+id/courses_main_course_view"
+    app:layout_constraintEnd_toEndOf="@+id/manager_main_course_view"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="@+id/courses_main_course_view" />
+    app:layout_constraintTop_toTopOf="@+id/manager_main_course_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

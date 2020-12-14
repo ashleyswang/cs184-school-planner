@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -29,8 +29,8 @@ class MainLayoutHelper(
         }
 
     private var tabLayout: TabLayout = model.view.findViewById(R.id.terms_tab_layout)
-    private var courseLayout: ConstraintLayout = model.view.findViewById(R.id.courses_main_course_layout)
-    private var eventsLayout: ConstraintLayout = model.view.findViewById(R.id.courses_main_events_layout)
+    private var courseLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_course_layout)
+    private var eventsLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_events_layout)
 
     private var courseListHelper: CourseListHelper = CourseListHelper(fragment, model)
     private var eventsListHelper: EventsListHelper = EventsListHelper(fragment, model)

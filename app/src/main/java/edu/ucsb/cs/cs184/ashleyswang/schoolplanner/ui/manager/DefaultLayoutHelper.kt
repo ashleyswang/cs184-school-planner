@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 import android.util.Log
 import android.view.View
@@ -26,7 +26,7 @@ class DefaultLayoutHelper(
     private var isDefaultView: Boolean = false
 
     init {
-        val defaultAdd: Button = defaultLayout.findViewById(R.id.courses_default_button)
+        val defaultAdd: Button = defaultLayout.findViewById(R.id.manager_default_button)
         defaultAdd.setOnClickListener {
             fragment.openTermAdder()
             drawer.close()

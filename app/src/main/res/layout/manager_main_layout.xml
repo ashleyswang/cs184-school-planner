@@ -40,12 +40,12 @@
         android:paddingTop="?android:attr/actionBarSize">
 
         <include
-            layout="@layout/courses_main_course"
+            layout="@layout/manager_main_course_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         <include
-            layout="@layout/courses_main_events"
+            layout="@layout/manager_main_events_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

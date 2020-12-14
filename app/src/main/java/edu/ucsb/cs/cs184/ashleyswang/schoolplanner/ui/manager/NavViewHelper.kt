@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.courses
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 import android.util.Log
 import android.view.Menu
