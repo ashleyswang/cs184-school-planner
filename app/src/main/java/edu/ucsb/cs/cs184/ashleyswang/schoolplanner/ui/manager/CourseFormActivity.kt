@@ -15,10 +15,10 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.WeeklyEvent
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.Exception
 
 class CourseFormActivity : AppCompatActivity() {
@@ -29,10 +29,10 @@ class CourseFormActivity : AppCompatActivity() {
     val ACTION_DEL: Int = 2
 
     private var editExisting: Boolean = false
-    private var lectStartDate: LocalDateTime = LocalDateTime.now()
-    private var lectEndDate: LocalDateTime? = null
-    private var sectStartDate: LocalDateTime = LocalDateTime.now()
-    private var sectEndDate: LocalDateTime? = null
+    private var lectStartDate: LocalTime = LocalTime.now()
+    private var lectEndDate: LocalTime? = null
+    private var sectStartDate: LocalTime = LocalTime.now()
+    private var sectEndDate: LocalTime? = null
 
     private lateinit var controller: Controller
     private lateinit var termId: String
@@ -111,7 +111,7 @@ class CourseFormActivity : AppCompatActivity() {
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
                     lectStartEditText.setText(timeString)
-                    lectStartDate = lectStartDate.withHour(hourOfDay).withMinute(minute)
+                    lectStartDate = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
             picker.show()
         }
@@ -125,7 +125,7 @@ class CourseFormActivity : AppCompatActivity() {
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
                     lectEndEditText.setText(timeString)
-                    lectEndDate = lectStartDate.withHour(hourOfDay).withMinute(minute)
+                    lectEndDate = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
             picker.show()
         }
@@ -139,7 +139,7 @@ class CourseFormActivity : AppCompatActivity() {
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
                     sectStartEditText.setText(timeString)
-                    sectStartDate = sectStartDate.withHour(hourOfDay).withMinute(minute)
+                    sectStartDate = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
             picker.show()
         }
@@ -153,7 +153,7 @@ class CourseFormActivity : AppCompatActivity() {
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
                     sectEndEditText.setText(timeString)
-                    sectEndDate = sectStartDate.withHour(hourOfDay).withMinute(minute)
+                    sectEndDate = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
             picker.show()
         }
@@ -164,8 +164,8 @@ class CourseFormActivity : AppCompatActivity() {
         if (editExisting) {
             initCourseName = intent.getStringExtra("courseName")!!
             lectureId = intent.getStringExtra("lectureId")!!
-            lectStartDate = LocalDateTime.parse(intent.getStringExtra("lectStart")!!)
-            lectEndDate = LocalDateTime.parse(intent.getStringExtra("lectEnd")!!)
+            lectStartDate = LocalTime.parse(intent.getStringExtra("lectStart")!!)
+            lectEndDate = LocalTime.parse(intent.getStringExtra("lectEnd")!!)
             initSectCheck = intent.getBooleanExtra("checkSection", false)
 
             // set current course values into editor
@@ -188,8 +188,8 @@ class CourseFormActivity : AppCompatActivity() {
                 sectionLayout.visibility = View.VISIBLE
                 sectionId = intent.getStringExtra("sectionId")!!
 
-                sectStartDate = LocalDateTime.parse(intent.getStringExtra("sectStart")!!)
-                sectEndDate = LocalDateTime.parse(intent.getStringExtra("sectEnd")!!)
+                sectStartDate = LocalTime.parse(intent.getStringExtra("sectStart")!!)
+                sectEndDate = LocalTime.parse(intent.getStringExtra("sectEnd")!!)
 
                 initSectStart = getTimeDisplayString(sectStartDate.hour, sectStartDate.minute)
                 sectStartEditText.setText(initSectStart)
@@ -263,28 +263,26 @@ class CourseFormActivity : AppCompatActivity() {
             // Get First Lecture Start Time
             var lectStart = parseTimeDisplayString(lectStartInput)
             var lectEnd = parseTimeDisplayString(lectEndInput)
-            if (lectStartInput != initLectStart || lectEndInput != initLectEnd) {
-                val lectDuration = Duration.between(lectStart, lectEnd)
-                lectStart = makeFirstMeetingDate(lectStart, lectDaySelectInput)
-                lectEnd = lectStart.plus(lectDuration)
-            }
             if (lectDaySelectInput.isEmpty()) throw Exception()
 
             if (makeSection) updateSection()
 
             val course =
                 if (editExisting) term.courses[courseId]!! else term.addCourse()
+            val lecture = course.meet[lectureId] ?: course.addMeet()
 
-            val lecture = course.meet.values.find { it.name == "Lecture" } ?: course.addMeet()
-            if (lectStartInput != initLectStart) lecture.event.start = lectStart
-            if (lectEndInput != initLectEnd) lecture.event.end = lectEnd
+            if (lectStartInput != initLectStart) lecture.start = lectStart
+            if (lectEndInput != initLectEnd) lecture.end = lectEnd
             if (!recurDayEquals(initLectDays, lectDaySelectInput)) {
-                // make recur for event and replace
+                val lectDaysArray = BooleanArray(5) { false }
+                for (i in 0 until 5)
+                    lectDaysArray[i] = lectDaySelectViews[i].isChecked
+                lecture.daysToRepeat = lectDaysArray
             }
 
             // Removed Section
             if (initSectCheck && !makeSection) {
-                val section = course.meet.values.find { it.name == "Section" }!!
+                val section = course.meet[sectionId]!!
                 course.removeMeet(section)
             }
 
@@ -312,34 +310,21 @@ class CourseFormActivity : AppCompatActivity() {
 
         var sectStart = parseTimeDisplayString(sectStartInput)
         var sectEnd = parseTimeDisplayString(sectEndInput)
-        if (sectStartInput != initSectStart || sectEndInput != initSectEnd) {
-            val sectDuration = Duration.between(sectStart, sectEnd)
-            sectStart = makeFirstMeetingDate(sectStart, sectDaySelectInput)
-            sectEnd = sectStart.plus(sectDuration)
-        }
 
         // Make Section Changes to Database
         val course =
             if (editExisting) term.courses[courseId]!! else term.addCourse()
         val section = course.meet[sectionId] ?: course.addMeet()
 
-        if (sectStartInput != initSectStart) section.event.start = sectStart
-        if (sectEndInput != initSectEnd) section.event.end = sectEnd
-
-        // Only Start and End Time Changed
-        val datesChanged
-                = sectStartInput != initSectStart || sectEndInput != initSectEnd
-        val recurChanged = !recurDayEquals(initSectDays, sectDaySelectInput)
-
-        if (datesChanged && !recurChanged) {
-            val changedEvents = course.events.values.filter { it.recur }
-        } else if (recurChanged) {
-            val recur = WeeklyEvent(section.event)
-            recur.start = term.start
-            recur.end = term.end
-            recur.addDays(*sectDaySelectInput.toTypedArray())
-            section.event.recur = recur
+        if (sectStartInput != initSectStart) section.start = sectStart
+        if (sectEndInput != initSectEnd) section.end = sectEnd
+        if (!recurDayEquals(initSectDays, sectDaySelectInput)) {
+            val sectDaysArray = BooleanArray(5) { false }
+            for (i in 0 until 5)
+                sectDaysArray[i] = sectDaySelectViews[i].isChecked
+            section.daysToRepeat = sectDaysArray
         }
+
     }
 
     private fun getTimeDisplayString(hour: Int, minute: Int): String {
@@ -354,14 +339,13 @@ class CourseFormActivity : AppCompatActivity() {
 
     // Input should be in the form of HH:MM AM/PM
     // Output will be term start date with input time
-    private fun parseTimeDisplayString(input: String): LocalDateTime {
+    private fun parseTimeDisplayString(input: String): LocalTime {
         val isPM = (input.substring(6) == "PM")
         var hour = input.substring(0, 2).toInt()
         if (hour == 12 && !isPM) hour = 0
         else if (isPM) hour += 12
         val minute = input.substring(3, 5).toInt()
-        return controller.terms[termId]!!.start
-            .withHour(hour).withMinute(minute)
+        return LocalTime.of(hour, minute)
     }
 
     // Returns First Meeting Based on Start Date
