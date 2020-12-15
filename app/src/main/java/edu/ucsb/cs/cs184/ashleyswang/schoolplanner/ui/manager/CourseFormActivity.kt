@@ -16,7 +16,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import java.time.DayOfWeek
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.Exception
@@ -72,13 +71,13 @@ class CourseFormActivity : AppCompatActivity() {
         getFormViews()
         setTheme(R.style.TermsDatePicker)
         setInitialValues()
-        setTimeEditListeners()
+        setFormEditListeners()
         setFinishButtonListeners()
     }
 
     private fun setFinishButtonListeners() {
-        val doneBtn: Button = this.findViewById(R.id.course_form_submit)
-        doneBtn.setOnClickListener {
+        val submitBtn: ImageButton = this.findViewById(R.id.course_form_submit)
+        submitBtn.setOnClickListener {
             if (updateCourse()) {
                 val resultIntent: Intent = Intent()
                 val action: Int = if (editExisting) ACTION_EDIT else ACTION_ADD
@@ -94,14 +93,14 @@ class CourseFormActivity : AppCompatActivity() {
             }
         }
 
-        val cancelBtn: Button = this.findViewById(R.id.course_form_cancel)
+        val cancelBtn: ImageButton = this.findViewById(R.id.course_form_cancel)
         cancelBtn.setOnClickListener {
             setResult(Activity.RESULT_CANCELED)
             finish()
         }
     }
 
-    private fun setTimeEditListeners() {
+    private fun setFormEditListeners() {
         lectStartEditText.inputType = InputType.TYPE_NULL
         lectStartEditText.setOnClickListener {
             val hour = lectStartDate.hour
@@ -156,6 +155,11 @@ class CourseFormActivity : AppCompatActivity() {
                     sectEndDate = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
             picker.show()
+        }
+
+        sectionSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) sectionLayout.visibility = View.VISIBLE
+            else sectionLayout.visibility = View.GONE
         }
     }
 
@@ -271,6 +275,7 @@ class CourseFormActivity : AppCompatActivity() {
                 if (editExisting) term.courses[courseId]!! else term.addCourse()
             val lecture = course.meet[lectureId] ?: course.addMeet()
 
+            if (lecture.name != "Lecture") lecture.name = "Lecture"
             if (lectStartInput != initLectStart) lecture.start = lectStart
             if (lectEndInput != initLectEnd) lecture.end = lectEnd
             if (!recurDayEquals(initLectDays, lectDaySelectInput)) {
@@ -316,6 +321,7 @@ class CourseFormActivity : AppCompatActivity() {
             if (editExisting) term.courses[courseId]!! else term.addCourse()
         val section = course.meet[sectionId] ?: course.addMeet()
 
+        if (section.name != "Section") section.name = "Section"
         if (sectStartInput != initSectStart) section.start = sectStart
         if (sectEndInput != initSectEnd) section.end = sectEnd
         if (!recurDayEquals(initSectDays, sectDaySelectInput)) {
@@ -324,17 +330,17 @@ class CourseFormActivity : AppCompatActivity() {
                 sectDaysArray[i] = sectDaySelectViews[i].isChecked
             section.daysToRepeat = sectDaysArray
         }
-
     }
 
     private fun getTimeDisplayString(hour: Int, minute: Int): String {
+        val hourDigit = if (hour < 13) hour else hour-12
         val hourString: String
-        if (hour == 0) hourString = "12"
-        else if (hour < 10) hourString = "0$hour"
-        else if (hour < 13) hourString = hour.toString()
-        else hourString = (hour - 12).toString()
+        if (hourDigit == 0) hourString = "12"
+        else if (hourDigit < 10) hourString = "0$hourDigit"
+        else hourString = hourDigit.toString()
+        val minString = if (minute < 10) "0$minute" else minute.toString()
         val timeSuffix = if (hour < 12) "AM" else "PM"
-        return "$hourString:$minute $timeSuffix"
+        return "$hourString:$minString $timeSuffix"
     }
 
     // Input should be in the form of HH:MM AM/PM
@@ -343,21 +349,9 @@ class CourseFormActivity : AppCompatActivity() {
         val isPM = (input.substring(6) == "PM")
         var hour = input.substring(0, 2).toInt()
         if (hour == 12 && !isPM) hour = 0
-        else if (isPM) hour += 12
+        else if (hour != 12 && isPM) hour += 12
         val minute = input.substring(3, 5).toInt()
         return LocalTime.of(hour, minute)
-    }
-
-    // Returns First Meeting Based on Start Date
-    private fun makeFirstMeetingDate(
-        meetingTime: LocalDateTime, recurDays: ArrayList<DayOfWeek>
-    ): LocalDateTime {
-        var eventDate = meetingTime
-        // get first date after termStartDate that has DayOfWeek in recurDays
-        while (!recurDays.contains(meetingTime.dayOfWeek)) {
-            eventDate = meetingTime.plusDays(1.toLong())
-        }
-        return eventDate
     }
 
     private fun recurDayEquals(
@@ -390,7 +384,7 @@ class CourseFormActivity : AppCompatActivity() {
         sectionSwitch = this.findViewById(R.id.course_form_section_switch)
         sectionLayout = this.findViewById(R.id.course_form_section_layout)
         sectStartEditText = this.findViewById(R.id.section_start)
-        sectEndEditText = this.findViewById(R.id.course_end)
+        sectEndEditText = this.findViewById(R.id.section_end)
 
         val sectSelM: CheckBox = this.findViewById(R.id.section_day_mon)
         val sectSelT: CheckBox = this.findViewById(R.id.section_day_tue)

@@ -1,5 +1,6 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,8 +42,6 @@ class CourseListHelper(
     // private var prevActiveId: String? = null
 
     init {
-        notifyTermChange()
-
         val activeTermObserver: Observer<Term> = Observer<Term> {
             if (activeTerm != null) notifyTermChange()
         }

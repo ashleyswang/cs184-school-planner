@@ -2,6 +2,7 @@ package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
@@ -31,12 +32,14 @@ class MainLayoutHelper(
     private var tabLayout: TabLayout = model.view.findViewById(R.id.terms_tab_layout)
     private var courseLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_course_layout)
     private var eventsLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_events_layout)
+    private var courseAddBtn: FloatingActionButton = model.view.findViewById(R.id.add_course)
 
     private var courseListHelper: CourseListHelper = CourseListHelper(fragment, model)
     private var eventsListHelper: EventsListHelper = EventsListHelper(fragment, model)
 
     init {
         setTabEventListeners()
+        setFabListeners()
         getModelState()
     }
 
@@ -61,6 +64,12 @@ class MainLayoutHelper(
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
+    }
+
+    private fun setFabListeners() {
+        courseAddBtn.setOnClickListener {
+            fragment.openCourseAdder()
+        }
     }
 
     private fun getModelState() {

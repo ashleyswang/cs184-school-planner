@@ -14,9 +14,13 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
 class ManagerFragment : Fragment() {
 
     val TAG: String = "ManagerFragment"
-    val ADD_TERM: Int = 0
-    val EDIT_TERM: Int = 1
-    val DEL_TERM: Int = 2
+
+    val TERM_REQUEST = 0
+    val COURSE_REQUEST = 1
+
+    val ACTION_ADD: Int = 0
+    val ACTION_EDIT: Int = 1
+    val ACTION_DEL: Int = 2
 
     lateinit var model: ManagerViewModel
 
@@ -63,25 +67,26 @@ class ManagerFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         requireActivity().menuInflater.inflate(R.menu.terms_toolbar_menu, menu)
         // Initialize Helpers
-        mainHelper = MainLayoutHelper(this, model)
+        navViewHelper = NavViewHelper(this, model)
         defaultHelper = DefaultLayoutHelper(this, model)
         toolbarHelper = ToolbarHelper(this, model)
-        navViewHelper = NavViewHelper(this, model)
+        mainHelper = MainLayoutHelper(this, model)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && data != null) {
-            when (data.getIntExtra("action", -1)) {
-                ADD_TERM -> {
-                    val termId = data.getStringExtra("termId")
-                    activeTerm = controller.terms[termId]!!
+            if (requestCode == TERM_REQUEST)
+                when (data.getIntExtra("action", -1)) {
+                    ACTION_ADD -> {
+                        val termId = data.getStringExtra("termId")
+                        activeTerm = controller.terms[termId]!!
+                    }
+                    ACTION_DEL -> {
+                        getDefaultTerm()
+                        model.drawer.open()
+                    }
                 }
-                DEL_TERM -> {
-                    getDefaultTerm()
-                    model.drawer.open()
-                }
-            }
         }
     }
 
@@ -94,17 +99,35 @@ class ManagerFragment : Fragment() {
             intent.putExtra("termStart", activeTerm!!.start.toString())
             intent.putExtra("termEnd", activeTerm!!.end.toString())
             intent.putExtra("default", controller.default == activeTerm!!.id)
-            this.startActivityForResult(intent, EDIT_TERM)
+            this.startActivityForResult(intent, TERM_REQUEST)
         }
     }
 
     fun openTermAdder() {
         val intent = Intent(context, TermFormActivity::class.java)
         intent.putExtra("userId", controller.user)
-        this.startActivityForResult(intent, ADD_TERM)
+        this.startActivityForResult(intent, TERM_REQUEST)
     }
 
-    private fun getDefaultTerm() {
+//    fun openCourseEditor() {
+//        val intent = Intent(context, CourseFormActivity::class.java)
+//        intent.putExtra("userId", controller.user)
+//        intent.putExtra("termId", activeTerm!!.id)
+//        intent.putExtra("termName", activeTerm!!.name)
+//        intent.putExtra("termStart", activeTerm!!.start.toString())
+//        intent.putExtra("termEnd", activeTerm!!.end.toString())
+//        intent.putExtra("default", controller.default == activeTerm!!.id)
+//        this.startActivityForResult(intent, EDIT_TERM)
+//    }
+
+    fun openCourseAdder() {
+        val intent = Intent(context, CourseFormActivity::class.java)
+        intent.putExtra("userId", controller.user)
+        intent.putExtra("termId", activeTerm!!.id)
+        this.startActivityForResult(intent, COURSE_REQUEST)
+    }
+
+    fun getDefaultTerm() {
         if (controller.default != null)
             this.activeTerm = controller.terms[controller.default!!]!!
         else if (model.termsList.isNotEmpty())

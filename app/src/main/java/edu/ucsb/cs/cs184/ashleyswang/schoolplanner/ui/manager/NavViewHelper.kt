@@ -44,6 +44,7 @@ class NavViewHelper (
 
     init {
         makeTermsList()
+        fragment.getDefaultTerm()
         makeTermsMenu()
         makeStaticDbListeners()
         setStaticDbListeners()
