@@ -28,11 +28,16 @@ class TermFormActivity : AppCompatActivity() {
 
     private var editExisting: Boolean = false
     private var startDate: LocalDateTime = LocalDateTime.now()
-    private var endDate: LocalDateTime = LocalDateTime.now()
+    private var endDate: LocalDateTime? = null
 
     private lateinit var controller: Controller
     private lateinit var termId: String
     private lateinit var picker: DatePickerDialog
+
+    private lateinit var termNameEditText: EditText
+    private lateinit var termStartEditText: EditText
+    private lateinit var termEndEditText: EditText
+    private lateinit var currTermSwitch: SwitchMaterial
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +47,7 @@ class TermFormActivity : AppCompatActivity() {
         controller = Controller(userId)
         editExisting = (intent.getStringExtra("termId") != null)
 
+        getFormViews()
         setTheme(R.style.TermsDatePicker)
         setInitialValues()
         setDateEditListeners()
@@ -74,7 +80,6 @@ class TermFormActivity : AppCompatActivity() {
     }
 
     private fun setDateEditListeners() {
-        val termStartEditText: EditText = this.findViewById(R.id.term_start)
         termStartEditText.inputType = InputType.TYPE_NULL
         termStartEditText.setOnClickListener {
             val month = startDate.monthValue
@@ -83,35 +88,22 @@ class TermFormActivity : AppCompatActivity() {
 
             picker = DatePickerDialog(this,
                 OnDateSetListener { view, year, month, day ->
-                    val monthString =
-                        if (month < 9) "0${month+1}"
-                        else (month+1).toString()
-                    val dayString =
-                        if (day < 10) "0${day}"
-                        else day.toString()
-                    val dateString = "$monthString/$dayString/$year"
+                    val dateString = getDateDisplayString(year, month+1, day)
                     termStartEditText.setText(dateString)
                     startDate = LocalDateTime.of(year, month+1, day, 0, 0)
                 }, year, month-1, day)
             picker.show()
         }
 
-        val termEndEditText: EditText = this.findViewById(R.id.term_end)
         termEndEditText.inputType = InputType.TYPE_NULL
         termEndEditText.setOnClickListener {
-            val month = endDate.monthValue
-            val day = endDate.dayOfMonth
-            val year = endDate.year
+            val month = endDate?.monthValue ?: startDate.monthValue
+            val day = endDate?.dayOfMonth ?: startDate.dayOfMonth
+            val year = endDate?.year ?: startDate.year
 
             picker = DatePickerDialog(this,
                 OnDateSetListener { view, year, month, day ->
-                    val monthString =
-                        if (month < 9) "0${month+1}"
-                        else (month+1).toString()
-                    val dayString =
-                        if (day < 10) "0${day}"
-                        else day.toString()
-                    val dateString = "$monthString/$dayString/$year"
+                    val dateString = getDateDisplayString(year, month+1, day)
                     termEndEditText.setText(dateString)
                     endDate = LocalDateTime.of(year, month+1, day, 23, 59)
                 }, year, month-1, day)
@@ -120,8 +112,7 @@ class TermFormActivity : AppCompatActivity() {
     }
 
     private fun setInitialValues() {
-        termId = if (editExisting) intent.getStringExtra("termId")!!
-            else ""
+        termId = if (editExisting) intent.getStringExtra("termId")!! else ""
         if (editExisting) {
             val termName = intent.getStringExtra("termName")!!
             startDate = LocalDateTime.parse(intent.getStringExtra("termStart")!!)
@@ -129,32 +120,16 @@ class TermFormActivity : AppCompatActivity() {
             val default = intent.getBooleanExtra("default", false)
 
             // set current term values into editor
-            val termNameEditText: EditText = this.findViewById(R.id.term_name)
             termNameEditText.setText(termName)
 
-            val termStartEditText: EditText = this.findViewById(R.id.term_start)
-            val startMonth =
-                if (startDate.monthValue < 10) "0${startDate.monthValue}"
-                else startDate.monthValue.toString()
-            val startDay =
-                if (startDate.dayOfMonth < 10) "0${startDate.dayOfMonth}"
-                else startDate.dayOfMonth.toString()
-            val startYear = startDate.year.toString()
-            val startString = "$startMonth/$startDay/$startYear"
+            val startString =
+                getDateDisplayString(startDate.year, startDate.monthValue, startDate.dayOfMonth)
             termStartEditText.setText(startString)
 
-            val termEndEditText: EditText = this.findViewById(R.id.term_end)
-            val endMonth =
-                if (endDate.monthValue < 10) "0${endDate.monthValue}"
-                else endDate.monthValue.toString()
-            val endDay =
-                if (endDate.dayOfMonth < 10) "0${endDate.dayOfMonth}"
-                else endDate.dayOfMonth.toString()
-            val endYear = endDate.year.toString()
-            val endString = "$endMonth/$endDay/$endYear"
+            val endString =
+                getDateDisplayString(endDate!!.year, endDate!!.monthValue, endDate!!.dayOfMonth)
             termEndEditText.setText(endString)
 
-            val currTermSwitch: SwitchMaterial = this.findViewById(R.id.term_form_curr_switch)
             currTermSwitch.isChecked = default
 
             makeDeleteButton()
@@ -198,10 +173,10 @@ class TermFormActivity : AppCompatActivity() {
     }
 
     private fun updateTerm(): Boolean {
-        val name = this.findViewById<EditText>(R.id.term_name).text.toString()
-        val startInput = this.findViewById<EditText>(R.id.term_start).text.toString()
-        val endInput = this.findViewById<EditText>(R.id.term_end).text.toString()
-        val currTermInput = this.findViewById<SwitchMaterial>(R.id.term_form_curr_switch).isChecked
+        val name = termNameEditText.text.toString()
+        val startInput = termStartEditText.text.toString()
+        val endInput = termEndEditText.text.toString()
+        val currTermInput = currTermSwitch.isChecked
 
         try {
             val startVals: ArrayList<Int> = arrayListOf<Int>()
@@ -229,5 +204,22 @@ class TermFormActivity : AppCompatActivity() {
         } catch (e: Exception) {
             return false
         }
+    }
+
+    private fun getDateDisplayString(year: Int, month: Int, day: Int): String {
+        val monthString =
+            if (month < 10) "0${month}"
+            else month.toString()
+        val dayString =
+            if (day < 10) "0${day}"
+            else day.toString()
+        return "$monthString/$dayString/$year"
+    }
+
+    private fun getFormViews() {
+        termNameEditText = this.findViewById(R.id.term_name)
+        termStartEditText = this.findViewById(R.id.term_start)
+        termEndEditText = this.findViewById(R.id.term_end)
+        currTermSwitch = this.findViewById(R.id.term_form_curr_switch)
     }
 }

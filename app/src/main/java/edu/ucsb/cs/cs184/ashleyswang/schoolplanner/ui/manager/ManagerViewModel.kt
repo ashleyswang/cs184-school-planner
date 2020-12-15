@@ -10,7 +10,7 @@ import com.google.android.material.navigation.NavigationView
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
 
 class ManagerViewModel : ViewModel() {
     lateinit var controller: Controller

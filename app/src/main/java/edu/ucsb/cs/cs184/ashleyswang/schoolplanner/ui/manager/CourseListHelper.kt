@@ -6,12 +6,16 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
-import java.time.LocalDateTime
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
+import java.time.DayOfWeek
+import java.time.format.TextStyle
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CourseListHelper(
     private val fragment: ManagerFragment,
@@ -34,7 +38,7 @@ class CourseListHelper(
     private var courseView: RecyclerView = model.view.findViewById(R.id.manager_main_course_view)
 
     // Don't worry about database updates for now
-//    private var prevActiveId: String? = null
+    // private var prevActiveId: String? = null
 
     init {
         notifyTermChange()
@@ -62,17 +66,17 @@ class CourseListHelper(
     }
 
     private fun makeCourseDisplay() {
-
+        val adapter = CoursesAdapter(courseList)
+        courseView.adapter = adapter
+        courseView.layoutManager = LinearLayoutManager(fragment.requireContext())
     }
 
-    private fun getCourseNextEvent(course: Course): Event {
-        val eventList = arrayListOf<Event>()
-        eventList.addAll(course.events.values)
-
+    private fun getCourseNextEvent(course: Course): Event? {
+        return course.events.values.minBy { it.start }
     }
 
-    inner class ContactsAdapter (private val courses: List<Course>)
-        : RecyclerView.Adapter<ContactsAdapter.ViewHolder>()
+    inner class CoursesAdapter (private val courses: List<Course>)
+        : RecyclerView.Adapter<CoursesAdapter.ViewHolder>()
     {
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val courseName: TextView = itemView.findViewById(R.id.course_item_name)
@@ -80,31 +84,41 @@ class CourseListHelper(
             val eventDate: TextView = itemView.findViewById(R.id.course_item_event_date)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactsAdapter.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoursesAdapter.ViewHolder {
             val context = parent.context
             val inflater = LayoutInflater.from(context)
             val courseItem = inflater.inflate(R.layout.manager_course_list_item, parent, false)
             return ViewHolder(courseItem)
         }
 
-        override fun onBindViewHolder(viewHolder: ContactsAdapter.ViewHolder, position: Int) {
+        override fun onBindViewHolder(viewHolder: CoursesAdapter.ViewHolder, position: Int) {
             val course: Course = courses.get(position)
-            val event: Event = getCourseNextEvent(course)
+            val event: Event? = getCourseNextEvent(course)
 
             // Set Course Item Values
             viewHolder.courseName.text = course.name
-            viewHolder.eventName.text = event.name
-            viewHolder.eventDate
+            if (event != null) {
+                val nameString = "Upcoming: ${event.name}"
+                val dayOfWeek =
+                    if (event.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
+                    else event.start.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US)
+                val dayOfMonth =
+                    if (event.start.dayOfMonth < 10) "0${event.start.dayOfMonth}"
+                    else event.start.dayOfMonth.toString()
+                val month =
+                    if (event.start.monthValue < 10) "0${event.start.monthValue}"
+                    else event.start.monthValue.toString()
+                val dateString = "$dayOfWeek $month/$dayOfMonth"
 
-            textView.setText(contact.name)
-            val button = viewHolder.messageButton
-            button.text = if (contact.isOnline) "Message" else "Offline"
-            button.isEnabled = contact.isOnline
+                viewHolder.eventName.text = nameString
+                viewHolder.eventDate.text = dateString
+            } else
+                viewHolder.eventName.text = "No upcoming events or deadlines"
         }
 
         // Returns the total count of items in the list
         override fun getItemCount(): Int {
-            return mContacts.size
+            return courses.size
         }
     }
 }

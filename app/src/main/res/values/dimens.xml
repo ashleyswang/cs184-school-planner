@@ -2,7 +2,7 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="fab_margin">10dp</dimen>
+    <dimen name="fab_margin">15dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <!--
     Because the window insets on round devices are larger than 15dp, this padding only applies
@@ -17,4 +17,5 @@
     -->
     <dimen name="inner_frame_layout_padding">5dp</dimen>
     <dimen name="datepicker_header_size">20dp</dimen>
+    <dimen name="bottom_nav_menu_height">56dp</dimen>
 </resources>

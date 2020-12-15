@@ -23,6 +23,7 @@
     <string name="courses_default_text">Add a school term to get started.</string>
     <string name="courses_default_btnText">  Add Term</string>
     <string name="course_item_upcoming_label">Upcoming:</string>
+    <string name="set_as_current_term">Set As Current Term</string>
 
 
 </resources>

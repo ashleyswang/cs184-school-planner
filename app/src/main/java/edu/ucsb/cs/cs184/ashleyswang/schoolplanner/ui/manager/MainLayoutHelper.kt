@@ -7,7 +7,7 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
 
 class MainLayoutHelper(
     private val fragment: ManagerFragment,

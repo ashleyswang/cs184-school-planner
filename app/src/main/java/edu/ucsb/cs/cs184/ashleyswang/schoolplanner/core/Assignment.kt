@@ -6,7 +6,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 class Assignment {
     val TAG: String = "Assignment"

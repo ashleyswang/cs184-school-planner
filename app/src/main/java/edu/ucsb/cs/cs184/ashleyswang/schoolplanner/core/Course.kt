@@ -6,7 +6,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 
 class Course : Scope {
     val TAG: String = "Course"
@@ -57,7 +56,12 @@ class Course : Scope {
         val eventsInfo = value["events"] as Map<String, Map<String, Any>>?
         if (eventsInfo != null)
             for (pair in eventsInfo) {
-                val event = Event(this, pair.key, pair.value)
+                val event =
+                    Event(
+                        this,
+                        pair.key,
+                        pair.value
+                    )
                 this._events.put(event.id, event)
             }
 
@@ -79,7 +83,8 @@ class Course : Scope {
 
     /* Getters and Setters */
     fun addAssign(): Assignment {
-        val event: Event = Event(this)
+        val event: Event =
+            Event(this)
         _events.put(event.id, event)
         val assign: Assignment = Assignment(this, event.id)
         _assign.put(assign.id, assign)
@@ -93,21 +98,20 @@ class Course : Scope {
     }
 
     fun addMeet(): Meeting {
-        val event: Event = Event(this)
-        _events.put(event.id, event)
-        val meet: Meeting = Meeting(this, event.id)
+        val meet: Meeting = Meeting(this)
         _meet.put(meet.id, meet)
         return meet
     }
 
     fun removeMeet(meet: Meeting): Meeting? {
+        meet.removeEvents(5)
         db.child("meet").child(meet.id).removeValue()
-        db.child("events").child(meet.eventId).removeValue()
         return _meet.remove(id)
     }
 
     override fun addEvent(): Event {
-        val event: Event = Event(this)
+        val event: Event =
+            Event(this)
         _events.put(event.id, event)
         return event
     }
@@ -139,7 +143,12 @@ class Course : Scope {
                 ) {
                     val add: Set<String> = value.keys.minus(_events.keys)
                     for (key in add) {
-                        val event = Event(this@Course, key, value[key]!!)
+                        val event =
+                            Event(
+                                this@Course,
+                                key,
+                                value[key]!!
+                            )
                         _events.put(event.id, event)
                     }
 

@@ -6,7 +6,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
 import java.time.LocalDateTime
 
 class Term : Scope {
@@ -81,7 +80,12 @@ class Term : Scope {
         val eventsInfo = value["events"] as Map<String, Map<String, Any>>?
         if (eventsInfo != null)
             for (pair in eventsInfo) {
-                val event = Event(this, pair.key, pair.value)
+                val event =
+                    Event(
+                        this,
+                        pair.key,
+                        pair.value
+                    )
                 this._events.put(event.id, event)
             }
         _addDbListener()
@@ -99,7 +103,8 @@ class Term : Scope {
     }
 
     override fun addEvent(): Event {
-        val event: Event = Event(this)
+        val event: Event =
+            Event(this)
         _events.put(event.id, event)
         return event
     }
@@ -188,7 +193,12 @@ class Term : Scope {
                 ) {
                     val add: Set<String> = value.keys.minus(_events.keys)
                     for (key in add) {
-                        val event = Event(this@Term, key, value[key]!!)
+                        val event =
+                            Event(
+                                this@Term,
+                                key,
+                                value[key]!!
+                            )
                         _events.put(key, event)
                     }
 

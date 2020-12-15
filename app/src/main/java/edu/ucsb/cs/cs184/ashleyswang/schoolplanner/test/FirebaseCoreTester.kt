@@ -1,10 +1,8 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.test
 
 import android.util.Log
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.*
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.RecurringEvent
 import java.time.LocalDateTime
 
