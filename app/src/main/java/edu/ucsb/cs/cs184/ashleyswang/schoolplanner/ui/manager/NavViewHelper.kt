@@ -173,6 +173,7 @@ class NavViewHelper (
         if (nameListeners.get(term.id) == null) {
             val listener = makeNameChangeListener(term)
             term.db.child("name").addValueEventListener(listener)
+            nameListeners.put(term.id, listener)
         }
     }
 
@@ -180,6 +181,7 @@ class NavViewHelper (
     private fun removeNameChangeListener(term: Term) {
         val listener = nameListeners.get(term.id)
         listener?.let { term.db.child("name").removeEventListener(it) }
+        nameListeners.remove(term.id)
     }
 
 }

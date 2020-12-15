@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="15dp"
-        android:text="Term Name"
+        android:text="Term Title"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@+id/term_name"
         app:layout_constraintTop_toBottomOf="@+id/term_form_header" />
@@ -82,12 +82,15 @@
 
     <EditText
         android:id="@+id/term_start"
-        android:layout_width="150dp"
+        android:layout_width="175dp"
         android:layout_height="45dp"
         android:ems="10"
         android:hint="MM/DD/YYYY"
         android:inputType="none"
         android:textSize="20sp"
+        android:drawableLeft="@drawable/ic_calendar_24px"
+        android:drawablePadding="10dp"
+        android:drawableTint="?android:attr/textColorTertiary"
         app:layout_constraintStart_toStartOf="@+id/term_name"
         app:layout_constraintTop_toBottomOf="@+id/term_start_label" />
 
@@ -102,10 +105,13 @@
 
     <EditText
         android:id="@+id/term_end"
-        android:layout_width="150dp"
+        android:layout_width="175dp"
         android:layout_height="45dp"
         android:ems="10"
         android:hint="MM/DD/YYYY"
+        android:drawableLeft="@drawable/ic_calendar_24px"
+        android:drawablePadding="10dp"
+        android:drawableTint="?android:attr/textColorTertiary"
         android:inputType="none"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/term_name"

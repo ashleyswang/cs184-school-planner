@@ -29,42 +29,42 @@ class MainLayoutHelper(
             model.eventsList = value
         }
 
-    private var tabLayout: TabLayout = model.view.findViewById(R.id.terms_tab_layout)
+//    private var tabLayout: TabLayout = model.view.findViewById(R.id.terms_tab_layout)
     private var courseLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_course_layout)
-    private var eventsLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_events_layout)
+//    private var eventsLayout: ConstraintLayout = model.view.findViewById(R.id.manager_main_events_layout)
     private var courseAddBtn: FloatingActionButton = model.view.findViewById(R.id.add_course)
 
     private var courseListHelper: CourseListHelper = CourseListHelper(fragment, model)
     private var eventsListHelper: EventsListHelper = EventsListHelper(fragment, model)
 
     init {
-        setTabEventListeners()
+//        setTabEventListeners()
         setFabListeners()
-        getModelState()
+//        getModelState()
     }
 
-    private fun changeToCourseView() {
-        eventsLayout.visibility = View.GONE
-        courseLayout.visibility = View.VISIBLE
-    }
-
-    private fun changeToEventsView() {
-        courseLayout.visibility = View.GONE
-        eventsLayout.visibility = View.VISIBLE
-    }
-
-    private fun setTabEventListeners() {
-        tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                when (tab.text) {
-                    "Courses" -> changeToCourseView()
-                    "Events" -> changeToEventsView()
-                }
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
-        })
-    }
+//    private fun changeToCourseView() {
+//        eventsLayout.visibility = View.GONE
+//        courseLayout.visibility = View.VISIBLE
+//    }
+//
+//    private fun changeToEventsView() {
+//        courseLayout.visibility = View.GONE
+//        eventsLayout.visibility = View.VISIBLE
+//    }
+//
+//    private fun setTabEventListeners() {
+//        tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
+//            override fun onTabSelected(tab: TabLayout.Tab) {
+//                when (tab.text) {
+//                    "Courses" -> changeToCourseView()
+//                    "Events" -> changeToEventsView()
+//                }
+//            }
+//            override fun onTabUnselected(tab: TabLayout.Tab) {}
+//            override fun onTabReselected(tab: TabLayout.Tab) {}
+//        })
+//    }
 
     private fun setFabListeners() {
         courseAddBtn.setOnClickListener {
@@ -72,12 +72,12 @@ class MainLayoutHelper(
         }
     }
 
-    private fun getModelState() {
-        if (model.tabStateTerm != activeTerm) {
-            model.tabStateTerm = activeTerm
-            model.inEventsView = false
-        }
-
-        if (model.inEventsView) changeToEventsView()
-    }
+//    private fun getModelState() {
+//        if (model.tabStateTerm != activeTerm) {
+//            model.tabStateTerm = activeTerm
+//            model.inEventsView = false
+//        }
+//
+//        if (model.inEventsView) changeToEventsView()
+//    }
 }

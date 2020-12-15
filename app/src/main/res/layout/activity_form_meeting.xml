@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.manager.MeetingFormActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/meeting_form_header"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/lightGrey"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/meeting_form_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGrey"
+            android:padding="15dp"
+            android:src="@drawable/ic_close_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/meeting_form_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGrey"
+            android:padding="15dp"
+            android:src="@drawable/ic_check_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/meeting_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="15dp"
+        android:text="Class Type"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/meeting_name"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_form_header" />
+
+    <EditText
+        android:id="@+id/meeting_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="25dp"
+        android:hint="New Lecture"
+        android:textSize="22sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_name_label" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="15dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_name" />
+
+
+    <TextView
+        android:id="@+id/meeting_lecture_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Meeting Days"
+        android:textSize="14sp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintStart_toStartOf="@+id/meeting_name"
+        app:layout_constraintTop_toTopOf="@+id/divider" />
+
+    <LinearLayout
+        android:id="@+id/meeting_lecture_day_select"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_lecture_label"
+        android:layout_marginTop="15dp">
+        <CheckBox
+            android:id="@+id/meeting_day_mon"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="M"
+            android:textSize="20sp"
+            android:textColor="@android:color/tertiary_text_light"/>
+        <CheckBox
+            android:id="@+id/meeting_day_tue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="T"
+            android:textSize="20sp"
+            android:textColor="@android:color/tertiary_text_light"/>
+        <CheckBox
+            android:id="@+id/meeting_day_wed"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="W"
+            android:textSize="20sp"
+            android:textColor="@android:color/tertiary_text_light"/>
+        <CheckBox
+            android:id="@+id/meeting_day_thu"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="R"
+            android:textSize="20sp"
+            android:textColor="@android:color/tertiary_text_light"/>
+        <CheckBox
+            android:id="@+id/meeting_day_fri"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="F"
+            android:textSize="20sp"
+            android:textColor="@android:color/tertiary_text_light"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/meeting_start_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="Start Time"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/meeting_name"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_lecture_day_select" />
+
+    <EditText
+        android:id="@+id/meeting_start"
+        android:layout_width="160dp"
+        android:layout_height="45dp"
+        android:ems="10"
+        android:drawableLeft="@drawable/ic_schedule_24px"
+        android:drawablePadding="10dp"
+        android:drawableTint="?android:attr/textColorTertiary"
+        android:hint="HH:MM XM"
+        android:inputType="none"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/meeting_name"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_start_label" />
+
+    <TextView
+        android:id="@+id/meeting_end_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="End Time"
+        android:textSize="14dp"
+        app:layout_constraintStart_toStartOf="@+id/meeting_end"
+        app:layout_constraintTop_toTopOf="@+id/meeting_start_label" />
+
+    <EditText
+        android:id="@+id/meeting_end"
+        android:layout_width="160dp"
+        android:layout_height="45dp"
+        android:ems="10"
+        android:hint="HH:MM XM"
+        android:drawableLeft="@drawable/ic_schedule_24px"
+        android:drawablePadding="10dp"
+        android:drawableTint="?android:attr/textColorTertiary"
+        android:inputType="none"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/meeting_name"
+        app:layout_constraintTop_toBottomOf="@+id/meeting_end_label" />
+
+    <Button
+        android:id="@+id/meeting_form_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/custom_round_button"
+        android:backgroundTint="@android:color/transparent"
+        android:drawableLeft="@drawable/ic_delete_24"
+        android:drawableTint="@color/warning"
+        android:gravity="center_vertical"
+        android:outlineAmbientShadowColor="@color/cardview_shadow_start_color"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="15dp"
+        android:text="  Delete Class"
+        android:textColor="@color/warning"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

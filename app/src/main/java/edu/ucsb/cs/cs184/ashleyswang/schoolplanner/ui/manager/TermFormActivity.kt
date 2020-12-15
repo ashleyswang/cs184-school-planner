@@ -179,6 +179,8 @@ class TermFormActivity : AppCompatActivity() {
         val currTermInput = currTermSwitch.isChecked
 
         try {
+            if (name == "") throw Exception()
+
             val startVals: ArrayList<Int> = arrayListOf<Int>()
             for (value in startInput.split('/'))
                 startVals.add(value.toInt())
