@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms
 
 import android.app.Activity
 import android.app.AlertDialog

@@ -1,23 +1,16 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
-import java.time.DayOfWeek
-import java.time.LocalDateTime
-import java.time.LocalTime
 import kotlin.Exception
 
 class CourseFormActivity : AppCompatActivity() {
@@ -88,7 +81,7 @@ class CourseFormActivity : AppCompatActivity() {
     }
 
     private fun makeDeleteButton() {
-        val deleteBtn: Button = this.findViewById(R.id.term_form_delete)
+        val deleteBtn: Button = this.findViewById(R.id.course_form_delete)
         deleteBtn.visibility = View.VISIBLE
 
         deleteBtn.setOnClickListener{

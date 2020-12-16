@@ -1,7 +1,8 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -13,36 +14,39 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
-import java.time.DayOfWeek
+import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.Exception
 
-class MeetingFormActivity : AppCompatActivity() {
+class EventFormActivity : AppCompatActivity() {
 
-    val TAG: String = "MeetingFormActivity"
+    val TAG: String = "EventFormActivity"
     val ACTION_ADD: Int = 0
     val ACTION_EDIT: Int = 1
     val ACTION_DEL: Int = 2
 
     private var editExisting: Boolean = false
+    private var dateValue: LocalDateTime = LocalDateTime.now()
     private var startTime: LocalTime = LocalTime.now()
     private var endTime: LocalTime? = null
 
     private lateinit var controller: Controller
     private lateinit var termId: String
     private lateinit var courseId: String
-    private lateinit var meetId: String
-    private lateinit var picker: TimePickerDialog
+    private lateinit var eventId: String
 
-    private lateinit var meetNameEditText: EditText
-    private lateinit var startTimeEditText: EditText
-    private lateinit var endTimeEditText: EditText
-    private lateinit var daySelectViews: ArrayList<CheckBox>
+    private lateinit var datePicker: DatePickerDialog
+    private lateinit var timePicker: TimePickerDialog
 
-    private var initMeetName: String = "New Class"
-    private var initStartTime: String = ""
-    private var initEndTime: String = ""
-    private var initSelDays: BooleanArray = BooleanArray(5) { false }
+    private lateinit var nameEditText: EditText
+    private lateinit var dateEditText: EditText
+    private lateinit var startEditText: EditText
+    private lateinit var endEditText: EditText
+
+    private var initName: String = ""
+    private var initDate: String = ""
+    private var initStart: String = ""
+    private var initEnd: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +56,7 @@ class MeetingFormActivity : AppCompatActivity() {
         controller = Controller(userId)
         termId = intent.getStringExtra("termId")!!
         courseId = intent.getStringExtra("courseId")!!
-        editExisting = (intent.getStringExtra("meetId") != null)
+        editExisting = (intent.getStringExtra("eventId") != null)
 
         getFormViews()
         setTheme(R.style.TermsDatePicker)
@@ -62,13 +66,13 @@ class MeetingFormActivity : AppCompatActivity() {
     }
 
     private fun setFinishButtonListeners() {
-        val submitBtn: ImageButton = this.findViewById(R.id.course_form_submit)
+        val submitBtn: ImageButton = this.findViewById(R.id.event_form_submit)
         submitBtn.setOnClickListener {
-            if (updateMeeting()) {
+            if (updateEvent()) {
                 val resultIntent: Intent = Intent()
                 val action: Int = if (editExisting) ACTION_EDIT else ACTION_ADD
                 resultIntent.putExtra("action", action)
-                resultIntent.putExtra("courseId", courseId)
+                resultIntent.putExtra("eventId", eventId)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -79,7 +83,7 @@ class MeetingFormActivity : AppCompatActivity() {
             }
         }
 
-        val cancelBtn: ImageButton = this.findViewById(R.id.course_form_cancel)
+        val cancelBtn: ImageButton = this.findViewById(R.id.event_form_cancel)
         cancelBtn.setOnClickListener {
             setResult(Activity.RESULT_CANCELED)
             finish()
@@ -87,80 +91,94 @@ class MeetingFormActivity : AppCompatActivity() {
     }
 
     private fun setFormEditListeners() {
-        startTimeEditText.inputType = InputType.TYPE_NULL
-        startTimeEditText.setOnClickListener {
+        dateEditText.inputType = InputType.TYPE_NULL
+        dateEditText.setOnClickListener {
+            val month = dateValue.monthValue
+            val day = dateValue.dayOfMonth
+            val year = dateValue.year
+
+            datePicker = DatePickerDialog(this,
+                DatePickerDialog.OnDateSetListener { view, year, monthValue, dayOfMonth ->
+                    val dateString
+                            = getDateDisplayString(year, monthValue+1, dayOfMonth)
+                    dateEditText.setText(dateString)
+                    dateValue = dateValue.withYear(year)
+                        .withMonth(monthValue+1)
+                        .withDayOfMonth(dayOfMonth)
+                }, year, month-1, day)
+            datePicker.show()
+        }
+
+        startEditText.inputType = InputType.TYPE_NULL
+        startEditText.setOnClickListener {
             val hour = startTime.hour
             val min = startTime.minute
 
-            picker = TimePickerDialog(this,
+            timePicker = TimePickerDialog(this,
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
-                    startTimeEditText.setText(timeString)
+                    startEditText.setText(timeString)
                     startTime = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
-            picker.show()
+            timePicker.show()
         }
 
-        endTimeEditText.inputType = InputType.TYPE_NULL
-        endTimeEditText.setOnClickListener {
+        endEditText.inputType = InputType.TYPE_NULL
+        endEditText.setOnClickListener {
             val hour = endTime?.hour ?: startTime.hour
             val min = endTime?.minute ?: startTime.minute
 
-            picker = TimePickerDialog(this,
+            timePicker = TimePickerDialog(this,
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
-                    endTimeEditText.setText(timeString)
+                    endEditText.setText(timeString)
                     endTime = LocalTime.of(hourOfDay, minute)
                 }, hour, min, false)
-            picker.show()
+            timePicker.show()
         }
     }
 
     private fun setInitialValues() {
-        meetId = if (editExisting) intent.getStringExtra("meetId")!! else ""
+        eventId = if (editExisting) intent.getStringExtra("eventId")!! else ""
         if (editExisting) {
-            initMeetName = intent.getStringExtra("meetName")!!
-            startTime = LocalTime.parse(intent.getStringExtra("meetStart")!!)
-            endTime = LocalTime.parse(intent.getStringExtra("meetEnd")!!)
+            initName = intent.getStringExtra("eventName")!!
+            dateValue = LocalDateTime.parse(intent.getStringExtra("eventEnd")!!)
+            initEnd = getTimeDisplayString(dateValue.hour, dateValue.minute)
+            dateValue = LocalDateTime.parse(intent.getStringExtra("eventStart")!!)
+            initDate = getDateDisplayString(dateValue.year,
+                dateValue.monthValue, dateValue.dayOfMonth)
+            initStart = getTimeDisplayString(dateValue.hour, dateValue.minute)
 
             // set current course values into editor
-            meetNameEditText.setText(initMeetName)
-
-            initStartTime = getTimeDisplayString(startTime.hour, startTime.minute)
-            startTimeEditText.setText(initStartTime)
-
-            initEndTime = getTimeDisplayString(endTime!!.hour, endTime!!.minute)
-            endTimeEditText.setText(initEndTime)
-
-            // lecture recurrence set as boolean array representing [M, T, W, R, F]
-            initSelDays = intent.getBooleanArrayExtra("meetRecur")!!
-            for (i in 0 until 5)
-                daySelectViews[i].isChecked = initSelDays[i]
+            nameEditText.setText(initName)
+            dateEditText.setText(initDate)
+            startEditText.setText(initStart)
+            endEditText.setText(initEnd)
 
             makeDeleteButton()
         }
     }
 
     private fun makeDeleteButton() {
-        val deleteBtn: Button = this.findViewById(R.id.meeting_form_delete)
+        val deleteBtn: Button = this.findViewById(R.id.event_form_delete)
         deleteBtn.visibility = View.VISIBLE
 
         deleteBtn.setOnClickListener{
             val term = controller.terms[termId]!!
             val course = term.courses[courseId]!!
-            val meeting = course.meet[meetId]!!
+            val event = course.events[eventId]!!
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Delete Class")
-                .setMessage("Are you sure you want to permanently delete this class meeting?")
+            builder.setTitle("Delete Event")
+                .setMessage("Are you sure you want to permanently delete this event?")
             builder.apply {
                 setPositiveButton("DELETE") { dialog, id ->
-                    course.removeMeet(meeting)
+                    course.removeEvent(event)
                     dialog.dismiss()
                     val resultIntent: Intent = Intent()
                     resultIntent.putExtra("action", ACTION_DEL)
-                    resultIntent.putExtra("meetId", meetId)
+                    resultIntent.putExtra("eventId", eventId)
                     setResult(Activity.RESULT_OK, resultIntent)
-                    this@MeetingFormActivity.finish()
+                    this@EventFormActivity.finish()
                 }
 
                 setNegativeButton("Cancel") { dialog, id ->
@@ -179,43 +197,56 @@ class MeetingFormActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateMeeting(): Boolean {
+    private fun updateEvent(): Boolean {
         val term = controller.terms[termId]!!
         val course = term.courses[courseId]!!
-        val nameInput = meetNameEditText.text.toString()
-        val startInput = startTimeEditText.text.toString()
-        val endInput = endTimeEditText.text.toString()
-        val selDayInput = arrayListOf<DayOfWeek>()
-        for (i in 0 until 5)
-            if (daySelectViews[i].isChecked)
-                when (i) {
-                    0 -> selDayInput.add(DayOfWeek.MONDAY)
-                    1 -> selDayInput.add(DayOfWeek.TUESDAY)
-                    2 -> selDayInput.add(DayOfWeek.WEDNESDAY)
-                    3 -> selDayInput.add(DayOfWeek.THURSDAY)
-                    4 -> selDayInput.add(DayOfWeek.FRIDAY)
-                }
+
+        val nameInput = nameEditText.text.toString()
+        val dateInput = dateEditText.text.toString()
+        val startInput = startEditText.text.toString()
+        val endInput = endEditText.text.toString()
+
         try {
-            // Get First Lecture Start Time
-            val inputStartTime = parseTimeDisplayString(startInput)
-            val inputEndTime = parseTimeDisplayString(endInput)
-            if (nameInput == "" || selDayInput.isEmpty()) throw Exception()
+            if (nameInput == "") throw Exception()
+            dateValue = parseDateDisplayString(dateInput)
+            startTime = parseTimeDisplayString(startInput)
+            endTime = parseTimeDisplayString(endInput)
 
-            val meeting = course.meet[meetId] ?: course.addMeet()
+            val startDateTime =
+                dateValue.withHour(startTime.hour).withMinute(startTime.minute)
+            val endDateTime =
+                dateValue.withHour(endTime!!.hour).withMinute(endTime!!.minute)
 
-            if (nameInput != initMeetName) meeting.name = nameInput
-            if (startInput != initStartTime) meeting.start = inputStartTime
-            if (endInput != initEndTime) meeting.end = inputEndTime
-            if (!recurDayEquals(initSelDays, selDayInput)) {
-                val lectDaysArray = BooleanArray(5) { false }
-                for (i in 0 until 5)
-                    lectDaysArray[i] = daySelectViews[i].isChecked
-                meeting.daysToRepeat = lectDaysArray
-            }
+            val event = course.events[eventId] ?: course.addEvent()
+
+            if (nameInput != initName) event.name = nameInput
+            if (dateInput != initDate || startInput != initStart)
+                event.start = startDateTime
+            if (dateInput != initDate || endInput != initEnd)
+                event.end = endDateTime
+
             return true
         } catch (e: Exception) {
             return false
         }
+    }
+
+    private fun getDateDisplayString(year: Int, month: Int, day: Int): String {
+        val monthString =
+            if (month < 10) "0${month}"
+            else month.toString()
+        val dayString =
+            if (day < 10) "0${day}"
+            else day.toString()
+        return "$monthString/$dayString/$year"
+    }
+
+    private fun parseDateDisplayString(input: String): LocalDateTime {
+        val dateValues: ArrayList<Int> = arrayListOf<Int>()
+        for (value in input.split('/'))
+            dateValues.add(value.toInt())
+        return LocalDateTime.of(dateValues[2], dateValues[0],
+            dateValues[1], 23, 59)
     }
 
     private fun getTimeDisplayString(hour: Int, minute: Int): String {
@@ -240,31 +271,10 @@ class MeetingFormActivity : AppCompatActivity() {
         return LocalTime.of(hour, minute)
     }
 
-    private fun recurDayEquals(
-        init: BooleanArray, edit: ArrayList<DayOfWeek>
-    ): Boolean {
-        var equals = true
-        val daysOfWeek = arrayListOf<DayOfWeek>(
-            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
-
-        for (i in 0 until 5)
-            equals = equals && (init[i] == edit.contains(daysOfWeek[i]))
-
-        return equals
-    }
-
     private fun getFormViews() {
-        meetNameEditText = this.findViewById(R.id.meeting_name)
-        startTimeEditText = this.findViewById(R.id.meeting_start)
-        endTimeEditText = this.findViewById(R.id.meeting_end)
-
-        val selectM: CheckBox = this.findViewById(R.id.meeting_day_mon)
-        val selectT: CheckBox = this.findViewById(R.id.meeting_day_tue)
-        val selectW: CheckBox = this.findViewById(R.id.meeting_day_wed)
-        val selectR: CheckBox = this.findViewById(R.id.meeting_day_thu)
-        val selectF: CheckBox = this.findViewById(R.id.meeting_day_fri)
-        daySelectViews =
-            arrayListOf<CheckBox>(selectM, selectT, selectW, selectR, selectF)
+        nameEditText = this.findViewById(R.id.assign_name)
+        dateEditText = this.findViewById(R.id.assign_date)
+        startEditText = this.findViewById(R.id.assign_time)
+        endEditText = this.findViewById(R.id.assign_description)
     }
 }

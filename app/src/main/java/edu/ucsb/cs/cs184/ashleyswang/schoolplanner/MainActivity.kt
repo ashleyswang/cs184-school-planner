@@ -1,12 +1,8 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner
 
 import android.os.Bundle
-import android.service.controls.Control
-import android.view.Window
-import android.view.WindowManager
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_calendar, R.id.navigation_courses, R.id.navigation_schedule, R.id.navigation_deadlines
+                R.id.navigation_calendar, R.id.navigation_manager, R.id.navigation_schedule, R.id.navigation_deadlines
             )
         )
         navView.setupWithNavController(navController)

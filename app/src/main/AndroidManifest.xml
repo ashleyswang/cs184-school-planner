@@ -13,10 +13,10 @@
             android:name=".ui.deadlines.DeadlineFormActivity"
             android:label="@string/title_activity_deadline_form"></activity>
         <activity
-            android:name=".ui.manager.CourseFormActivity"
+            android:name=".ui.manager.forms.CourseFormActivity"
             android:label="@string/title_activity_course_form"></activity>
         <activity
-            android:name=".ui.manager.TermFormActivity"
+            android:name=".ui.manager.forms.TermFormActivity"
             android:label="@string/title_activity_term_form" />
         <activity android:name=".MainActivity">
             <intent-filter>

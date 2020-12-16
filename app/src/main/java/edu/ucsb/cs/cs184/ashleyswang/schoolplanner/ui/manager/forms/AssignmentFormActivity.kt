@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -18,35 +18,33 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.Exception
 
-class EventFormActivity : AppCompatActivity() {
+class AssignmentFormActivity : AppCompatActivity() {
 
-    val TAG: String = "EventFormActivity"
+    val TAG: String = "AssignmentFormActivity"
     val ACTION_ADD: Int = 0
     val ACTION_EDIT: Int = 1
     val ACTION_DEL: Int = 2
 
     private var editExisting: Boolean = false
-    private var dateValue: LocalDateTime = LocalDateTime.now()
-    private var startTime: LocalTime = LocalTime.now()
-    private var endTime: LocalTime? = null
+    private var dueDate: LocalDateTime = LocalDateTime.now()
 
     private lateinit var controller: Controller
     private lateinit var termId: String
     private lateinit var courseId: String
-    private lateinit var eventId: String
+    private lateinit var assignId: String
 
     private lateinit var datePicker: DatePickerDialog
     private lateinit var timePicker: TimePickerDialog
 
     private lateinit var nameEditText: EditText
     private lateinit var dateEditText: EditText
-    private lateinit var startEditText: EditText
-    private lateinit var endEditText: EditText
+    private lateinit var timeEditText: EditText
+    private lateinit var noteEditText: EditText
 
     private var initName: String = ""
     private var initDate: String = ""
-    private var initStart: String = ""
-    private var initEnd: String = ""
+    private var initTime: String = ""
+    private var initNote: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +54,7 @@ class EventFormActivity : AppCompatActivity() {
         controller = Controller(userId)
         termId = intent.getStringExtra("termId")!!
         courseId = intent.getStringExtra("courseId")!!
-        editExisting = (intent.getStringExtra("eventId") != null)
+        editExisting = (intent.getStringExtra("assignId") != null)
 
         getFormViews()
         setTheme(R.style.TermsDatePicker)
@@ -66,13 +64,13 @@ class EventFormActivity : AppCompatActivity() {
     }
 
     private fun setFinishButtonListeners() {
-        val submitBtn: ImageButton = this.findViewById(R.id.event_form_submit)
+        val submitBtn: ImageButton = this.findViewById(R.id.assign_form_submit)
         submitBtn.setOnClickListener {
-            if (updateEvent()) {
+            if (updateAssignment()) {
                 val resultIntent: Intent = Intent()
                 val action: Int = if (editExisting) ACTION_EDIT else ACTION_ADD
                 resultIntent.putExtra("action", action)
-                resultIntent.putExtra("eventId", eventId)
+                resultIntent.putExtra("assignId", assignId)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -83,7 +81,7 @@ class EventFormActivity : AppCompatActivity() {
             }
         }
 
-        val cancelBtn: ImageButton = this.findViewById(R.id.event_form_cancel)
+        val cancelBtn: ImageButton = this.findViewById(R.id.assign_form_cancel)
         cancelBtn.setOnClickListener {
             setResult(Activity.RESULT_CANCELED)
             finish()
@@ -93,92 +91,76 @@ class EventFormActivity : AppCompatActivity() {
     private fun setFormEditListeners() {
         dateEditText.inputType = InputType.TYPE_NULL
         dateEditText.setOnClickListener {
-            val month = dateValue.monthValue
-            val day = dateValue.dayOfMonth
-            val year = dateValue.year
+            val month = dueDate.monthValue
+            val day = dueDate.dayOfMonth
+            val year = dueDate.year
 
             datePicker = DatePickerDialog(this,
                 DatePickerDialog.OnDateSetListener { view, year, monthValue, dayOfMonth ->
                     val dateString
                             = getDateDisplayString(year, monthValue+1, dayOfMonth)
                     dateEditText.setText(dateString)
-                    dateValue = dateValue.withYear(year)
+                    dueDate = dueDate.withYear(year)
                         .withMonth(monthValue+1)
                         .withDayOfMonth(dayOfMonth)
                 }, year, month-1, day)
             datePicker.show()
         }
 
-        startEditText.inputType = InputType.TYPE_NULL
-        startEditText.setOnClickListener {
-            val hour = startTime.hour
-            val min = startTime.minute
+        timeEditText.inputType = InputType.TYPE_NULL
+        timeEditText.setOnClickListener {
+            val hour = dueDate.hour
+            val min = dueDate.minute
 
             timePicker = TimePickerDialog(this,
                 TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
                     val timeString = getTimeDisplayString(hourOfDay, minute)
-                    startEditText.setText(timeString)
-                    startTime = LocalTime.of(hourOfDay, minute)
-                }, hour, min, false)
-            timePicker.show()
-        }
-
-        endEditText.inputType = InputType.TYPE_NULL
-        endEditText.setOnClickListener {
-            val hour = endTime?.hour ?: startTime.hour
-            val min = endTime?.minute ?: startTime.minute
-
-            timePicker = TimePickerDialog(this,
-                TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-                    val timeString = getTimeDisplayString(hourOfDay, minute)
-                    endEditText.setText(timeString)
-                    endTime = LocalTime.of(hourOfDay, minute)
+                    timeEditText.setText(timeString)
+                    dueDate = dueDate.withHour(hourOfDay).withMinute(minute)
                 }, hour, min, false)
             timePicker.show()
         }
     }
 
     private fun setInitialValues() {
-        eventId = if (editExisting) intent.getStringExtra("eventId")!! else ""
+        assignId = if (editExisting) intent.getStringExtra("assignId")!! else ""
         if (editExisting) {
-            initName = intent.getStringExtra("eventName")!!
-            dateValue = LocalDateTime.parse(intent.getStringExtra("eventEnd")!!)
-            initEnd = getTimeDisplayString(dateValue.hour, dateValue.minute)
-            dateValue = LocalDateTime.parse(intent.getStringExtra("eventStart")!!)
-            initDate = getDateDisplayString(dateValue.year,
-                dateValue.monthValue, dateValue.dayOfMonth)
-            initStart = getTimeDisplayString(dateValue.hour, dateValue.minute)
+            initName = intent.getStringExtra("assignName")!!
+            dueDate = LocalDateTime.parse(intent.getStringExtra("assignDue")!!)
+            initDate = getDateDisplayString(dueDate.year, dueDate.monthValue, dueDate.dayOfMonth)
+            initTime = getTimeDisplayString(dueDate.hour, dueDate.minute)
+            initNote = intent.getStringExtra("descript") ?: ""
 
             // set current course values into editor
             nameEditText.setText(initName)
             dateEditText.setText(initDate)
-            startEditText.setText(initStart)
-            endEditText.setText(initEnd)
+            timeEditText.setText(initTime)
+            noteEditText.setText(initNote)
 
             makeDeleteButton()
         }
     }
 
     private fun makeDeleteButton() {
-        val deleteBtn: Button = this.findViewById(R.id.event_form_delete)
+        val deleteBtn: Button = this.findViewById(R.id.assign_form_delete)
         deleteBtn.visibility = View.VISIBLE
 
         deleteBtn.setOnClickListener{
             val term = controller.terms[termId]!!
             val course = term.courses[courseId]!!
-            val event = course.events[eventId]!!
+            val assign = course.assign[assignId]!!
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Delete Event")
-                .setMessage("Are you sure you want to permanently delete this event?")
+            builder.setTitle("Delete Assignment")
+                .setMessage("Are you sure you want to permanently delete this assignment?")
             builder.apply {
                 setPositiveButton("DELETE") { dialog, id ->
-                    course.removeEvent(event)
+                    course.removeAssign(assign)
                     dialog.dismiss()
                     val resultIntent: Intent = Intent()
                     resultIntent.putExtra("action", ACTION_DEL)
-                    resultIntent.putExtra("eventId", eventId)
+                    resultIntent.putExtra("assignId", assignId)
                     setResult(Activity.RESULT_OK, resultIntent)
-                    this@EventFormActivity.finish()
+                    this@AssignmentFormActivity.finish()
                 }
 
                 setNegativeButton("Cancel") { dialog, id ->
@@ -197,34 +179,27 @@ class EventFormActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateEvent(): Boolean {
+    private fun updateAssignment(): Boolean {
         val term = controller.terms[termId]!!
         val course = term.courses[courseId]!!
 
         val nameInput = nameEditText.text.toString()
         val dateInput = dateEditText.text.toString()
-        val startInput = startEditText.text.toString()
-        val endInput = endEditText.text.toString()
+        val timeInput = timeEditText.text.toString()
+        val noteInput = noteEditText.text.toString()
 
         try {
             if (nameInput == "") throw Exception()
-            dateValue = parseDateDisplayString(dateInput)
-            startTime = parseTimeDisplayString(startInput)
-            endTime = parseTimeDisplayString(endInput)
+            val dueTime = parseTimeDisplayString(timeInput)
+            dueDate = parseDateDisplayString(dateInput)
+                .withHour(dueTime.hour).withMinute(dueTime.minute)
 
-            val startDateTime =
-                dateValue.withHour(startTime.hour).withMinute(startTime.minute)
-            val endDateTime =
-                dateValue.withHour(endTime!!.hour).withMinute(endTime!!.minute)
+            val assign = course.assign[assignId] ?: course.addAssign()
 
-            val event = course.events[eventId] ?: course.addEvent()
-
-            if (nameInput != initName) event.name = nameInput
-            if (dateInput != initDate || startInput != initStart)
-                event.start = startDateTime
-            if (dateInput != initDate || endInput != initEnd)
-                event.end = endDateTime
-
+            if (nameInput != initName) assign.name = nameInput
+            if (dateInput != initDate || timeInput != initTime)
+                assign.event.start = dueDate
+            if (noteInput != initNote) assign.descript = noteInput
             return true
         } catch (e: Exception) {
             return false
@@ -274,7 +249,7 @@ class EventFormActivity : AppCompatActivity() {
     private fun getFormViews() {
         nameEditText = this.findViewById(R.id.assign_name)
         dateEditText = this.findViewById(R.id.assign_date)
-        startEditText = this.findViewById(R.id.assign_time)
-        endEditText = this.findViewById(R.id.assign_description)
+        timeEditText = this.findViewById(R.id.assign_time)
+        noteEditText = this.findViewById(R.id.assign_description)
     }
 }

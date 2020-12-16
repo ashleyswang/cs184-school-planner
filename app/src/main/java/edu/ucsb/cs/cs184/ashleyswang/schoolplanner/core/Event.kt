@@ -40,11 +40,18 @@ class Event {
             _recurId = value
             db.child("recurId").setValue(_recurId)
         }
+    var isAssign: Boolean
+        get() { return _isAssign }
+        set(value) {
+            _isAssign = value
+            db.child("isAssign").setValue(_isAssign)
+        }
 
     private var _name: String = "New Event"
     private var _start: LocalDateTime = LocalDateTime.now()
     private var _end: LocalDateTime? = null
     private var _recurId: String? = null
+    private var _isAssign: Boolean = false
 
     /*
      * Constructor:
@@ -59,6 +66,7 @@ class Event {
         this.name = "New Event"
         this.start = LocalDateTime.now()
         this.end = null
+        this.isAssign = false
         _addDbListener()
     }
 
@@ -76,6 +84,8 @@ class Event {
             this._end = LocalDateTime.parse(value["end"] as String)
         if (value["recurId"] != null)
             this._recurId = value["recurId"] as String
+        if (value["isAssign"] != null)
+            this._isAssign = value["isAssign"] as Boolean
 
         _addDbListener()
     }
@@ -128,6 +138,17 @@ class Event {
                 val value = dataSnapshot.getValue<String?>()
                 if (value != null && value != _recurId)
                     _recurId = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("isAssign").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<Boolean?>()
+                if (value != null && value != _isAssign)
+                    _isAssign = value
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())
