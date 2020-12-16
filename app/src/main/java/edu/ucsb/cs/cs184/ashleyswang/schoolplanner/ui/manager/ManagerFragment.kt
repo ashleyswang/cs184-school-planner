@@ -70,6 +70,8 @@ class ManagerFragment : Fragment() {
         // Initialize Database View Model Info
         controller = (activity as MainActivity).controller
         if (activeTerm == null) getDefaultTerm()
+        if (model.activeCourse != null)
+            makeCourseViewFragment(model.activeCourse!!, true)
 
         return model.view
     }
@@ -86,9 +88,6 @@ class ManagerFragment : Fragment() {
             .setOnClickListener {
                 openCourseAdder()
             }
-
-        if (model.activeCourse != null)
-            makeCourseViewFragment(model.activeCourse!!)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -155,21 +154,20 @@ class ManagerFragment : Fragment() {
         this.startActivityForResult(intent, COURSE_REQUEST)
     }
 
-    fun makeCourseViewFragment(course: Course) {
+    fun makeCourseViewFragment(course: Course, init: Boolean = false) {
         model.activeCourse = course
         val courseFragment = CourseViewFragment(this, course)
-        val id = (model.view.parent as ViewGroup).id
-        Log.d(TAG, "requireActivity() ${requireActivity()}")
-        childFragmentManager.beginTransaction()
-            .setCustomAnimations(
+        val ft = childFragmentManager.beginTransaction()
+        if (!init)
+            ft.setCustomAnimations(
                 R.anim.slide_in_right,
                 android.R.anim.slide_out_right,
                 R.anim.slide_in_right,
                 android.R.anim.slide_out_right)
-            .replace(
-                R.id.manager_fragment,
-                courseFragment,
-                "CourseViewFragment")
+        ft.replace(
+            R.id.manager_fragment,
+            courseFragment,
+            "CourseViewFragment")
             .addToBackStack(null)
             .commit()
     }

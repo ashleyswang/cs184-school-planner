@@ -41,8 +41,6 @@ class MeetingListHelper(
         }
 
     private var listView: RecyclerView = model.view.findViewById(R.id.manager_course_meet_list)
-
-    private var itemListeners: MutableMap<String, ValueEventListener> = mutableMapOf()
     private lateinit var adapter: MeetingAdapter
 
     init {
@@ -77,50 +75,12 @@ class MeetingListHelper(
         course.db.child("meet").addValueEventListener(
             object: ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val oldList = meetList
                     makeMeetingList()
-
-                    val removedItems = oldList.minus(meetList)
-                    for (item in removedItems)
-                        removeItemChangeListener(item)
-
-                    val addedItems = meetList.minus(oldList)
-                    for (item in addedItems)
-                        setItemChangeListener(item)
                 }
                 override fun onCancelled(error: DatabaseError) {
                     Log.w(TAG, "Failed to read database.", error.toException())
                 }
             })
-    }
-
-    private fun makeItemChangeListener(meet: Meeting): ValueEventListener {
-        return object: ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<Any>()
-                if (value != null) {
-                    val index = meetList.indexOf(meet)
-                    adapter.notifyItemChanged(index)
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read database.", error.toException())
-            }
-        }
-    }
-
-    private fun setItemChangeListener(meet: Meeting) {
-        if (itemListeners.get(meet.id) == null) {
-            val listener = makeItemChangeListener(meet)
-            meet.db.addValueEventListener(listener)
-            itemListeners.put(meet.id, listener)
-        }
-    }
-
-    private fun removeItemChangeListener(meet: Meeting) {
-        val listener = itemListeners.get(meet.id)
-        listener?.let { meet.db.removeEventListener(it) }
-        itemListeners.remove(meet.id)
     }
 
     private fun openMeetingAdder() {

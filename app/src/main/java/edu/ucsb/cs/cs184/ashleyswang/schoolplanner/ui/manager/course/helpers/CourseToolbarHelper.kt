@@ -47,6 +47,7 @@ class CourseToolbarHelper(
             fragment.parent.model.mainLayout.visibility = View.VISIBLE
             fragment.activity?.supportFragmentManager?.popBackStack()
             fragment.parent.model.activeCourse = null
+            model.tabState = "meeting"
         }
 
         // Set Listener for Course Editor

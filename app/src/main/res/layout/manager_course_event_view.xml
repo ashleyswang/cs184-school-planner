@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.manager.course.CourseViewFragment"
-    android:id="@+id/manager_course_event_layout">
+    android:id="@+id/manager_course_event_layout"
+    android:visibility="gone">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/manager_course_event_list"

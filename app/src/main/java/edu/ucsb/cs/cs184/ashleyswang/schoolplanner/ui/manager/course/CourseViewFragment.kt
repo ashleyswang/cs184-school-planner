@@ -83,6 +83,12 @@ class CourseViewFragment(
         // Initialize Toolbar
         setHasOptionsMenu(true)
         (activity as MainActivity).setSupportActionBar(model.toolbar)
+
+        meetingHelper = MeetingListHelper(this, model)
+        assignHelper = AssignmentListHelper(this, model)
+        eventsHelper = EventListHelper(this, model)
+        initializeView()
+
         return model.view
     }
 
@@ -92,9 +98,6 @@ class CourseViewFragment(
 
         // Layout Helpers
         toolbarHelper = CourseToolbarHelper(this, model)
-        meetingHelper = MeetingListHelper(this, model)
-        assignHelper = AssignmentListHelper(this, model)
-        eventsHelper = EventListHelper(this, model)
         setTabEventListeners()
     }
 
@@ -102,6 +105,7 @@ class CourseViewFragment(
         tabLayout.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
+                    Log.d(TAG, tabLayout.selectedTabPosition.toString())
                     when (tab.text) {
                         "Classes"     -> changeToMeetingView()
                         "Assignments" -> changeToAssignView()
@@ -113,22 +117,42 @@ class CourseViewFragment(
             })
     }
 
+    private fun initializeView() {
+        when (model.tabState) {
+            "meeting" -> changeToMeetingView()
+            "assign"  -> changeToAssignView()
+            "events"  -> changeToEventsView()
+        }
+    }
+
     private fun changeToMeetingView() {
         assignLayout.visibility = View.GONE
         eventsLayout.visibility = View.GONE
         meetLayout.visibility = View.VISIBLE
+        model.tabState = "meeting"
+
+        if (tabLayout.selectedTabPosition != 0)
+            tabLayout.selectTab(tabLayout.getTabAt(0))
     }
 
     private fun changeToAssignView() {
         meetLayout.visibility = View.GONE
         eventsLayout.visibility = View.GONE
         assignLayout.visibility = View.VISIBLE
+        model.tabState = "assign"
+
+        if (tabLayout.selectedTabPosition != 1)
+            tabLayout.selectTab(tabLayout.getTabAt(1))
     }
 
     private fun changeToEventsView() {
         meetLayout.visibility = View.GONE
         assignLayout.visibility = View.GONE
         eventsLayout.visibility = View.VISIBLE
+        model.tabState = "events"
+
+        if (tabLayout.selectedTabPosition != 2)
+            tabLayout.selectTab(tabLayout.getTabAt(2))
     }
 
 }

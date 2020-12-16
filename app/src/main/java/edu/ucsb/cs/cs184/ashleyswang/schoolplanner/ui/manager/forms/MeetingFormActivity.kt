@@ -46,7 +46,7 @@ class MeetingFormActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_form_course)
+        setContentView(R.layout.activity_form_meeting)
 
         val userId = intent.getStringExtra("userId")!!
         controller = Controller(userId)
@@ -62,13 +62,13 @@ class MeetingFormActivity : AppCompatActivity() {
     }
 
     private fun setFinishButtonListeners() {
-        val submitBtn: ImageButton = this.findViewById(R.id.course_form_submit)
+        val submitBtn: ImageButton = this.findViewById(R.id.meeting_form_submit)
         submitBtn.setOnClickListener {
             if (updateMeeting()) {
                 val resultIntent: Intent = Intent()
                 val action: Int = if (editExisting) ACTION_EDIT else ACTION_ADD
                 resultIntent.putExtra("action", action)
-                resultIntent.putExtra("courseId", courseId)
+                resultIntent.putExtra("meetId", meetId)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -79,7 +79,7 @@ class MeetingFormActivity : AppCompatActivity() {
             }
         }
 
-        val cancelBtn: ImageButton = this.findViewById(R.id.course_form_cancel)
+        val cancelBtn: ImageButton = this.findViewById(R.id.meeting_form_cancel)
         cancelBtn.setOnClickListener {
             setResult(Activity.RESULT_CANCELED)
             finish()

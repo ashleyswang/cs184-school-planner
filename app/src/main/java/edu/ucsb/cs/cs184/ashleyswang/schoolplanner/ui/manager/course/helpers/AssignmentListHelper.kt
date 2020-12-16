@@ -64,7 +64,7 @@ class AssignmentListHelper(
     private fun makeAssignmentList() {
         assignList.clear()
         assignList.addAll(course.assign.values)
-        assignList.sortBy { it.event.start }
+        assignList.sortBy { it.date }
         adapter.notifyDataSetChanged()
     }
 
@@ -80,54 +80,12 @@ class AssignmentListHelper(
         course.db.child("assign").addValueEventListener(
             object: ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val oldList = assignList
                     makeAssignmentList()
-
-                    val removedItems = oldList.minus(assignList)
-                    for (item in removedItems)
-                        removeItemChangeListener(item)
-
-                    val addedItems = assignList.minus(oldList)
-                    for (item in addedItems)
-                        setItemChangeListener(item)
                 }
                 override fun onCancelled(error: DatabaseError) {
                     Log.w(TAG, "Failed to read database.", error.toException())
                 }
             })
-    }
-
-    private fun makeItemChangeListener(assign: Assignment): ValueEventListener {
-        return object: ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<Any>()
-                if (value != null) {
-                    val index = assignList.indexOf(assign)
-                    adapter.notifyItemChanged(index)
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read database.", error.toException())
-            }
-        }
-    }
-
-    private fun setItemChangeListener(assign: Assignment) {
-        if (itemListeners.get(assign.id) == null) {
-            val listener = makeItemChangeListener(assign)
-            assign.db.child("completed").addValueEventListener(listener)
-            assign.event.db.addValueEventListener(listener)
-            itemListeners.put(assign.id, listener)
-        }
-    }
-
-    private fun removeItemChangeListener(assign: Assignment) {
-        val listener = itemListeners.get(assign.id)
-        listener?.let {
-            assign.db.child("completed").removeEventListener(it)
-            assign.event.db.removeEventListener(it)
-        }
-        itemListeners.remove(assign.id)
     }
 
     private fun openAssignmentAdder() {
@@ -145,7 +103,7 @@ class AssignmentListHelper(
         intent.putExtra("courseId", course.id)
         intent.putExtra("assignId", assign.id)
         intent.putExtra("assignName", assign.name)
-        intent.putExtra("assignDue", assign.event.start.toString())
+        intent.putExtra("assignDue", assign.date.toString())
         intent.putExtra("descript", assign.descript)
         fragment.startActivity(intent)
     }
@@ -205,8 +163,8 @@ class AssignmentListHelper(
             // Set Course Item Values
             viewHolder.assign = assign
             viewHolder.assignName.text = assign.name
-            viewHolder.assignDate.text = getDateDisplayString(assign.event.start)
-            viewHolder.assignTime.text = getTimeDisplayString(assign.event.start)
+            viewHolder.assignDate.text = getDateDisplayString(assign.date)
+            viewHolder.assignTime.text = getTimeDisplayString(assign.date)
             viewHolder.assignCompleted.isChecked = assign.completed
         }
 

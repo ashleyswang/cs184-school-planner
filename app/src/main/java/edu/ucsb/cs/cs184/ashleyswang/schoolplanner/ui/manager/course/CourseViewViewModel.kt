@@ -26,6 +26,5 @@ class CourseViewViewModel : ViewModel() {
     var eventsList: ArrayList<Event> = arrayListOf<Event>()
 
     // Other UI States
-    var tabStateTerm: Term? = null
-    var inEventsView: Boolean = false
+    var tabState: String = "class"
 }

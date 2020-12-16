@@ -50,7 +50,7 @@ class EventFormActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_form_course)
+        setContentView(R.layout.activity_form_event)
 
         val userId = intent.getStringExtra("userId")!!
         controller = Controller(userId)
@@ -272,9 +272,9 @@ class EventFormActivity : AppCompatActivity() {
     }
 
     private fun getFormViews() {
-        nameEditText = this.findViewById(R.id.assign_name)
-        dateEditText = this.findViewById(R.id.assign_date)
-        startEditText = this.findViewById(R.id.assign_time)
-        endEditText = this.findViewById(R.id.assign_description)
+        nameEditText = this.findViewById(R.id.event_name)
+        dateEditText = this.findViewById(R.id.event_date)
+        startEditText = this.findViewById(R.id.event_start)
+        endEditText = this.findViewById(R.id.event_end)
     }
 }

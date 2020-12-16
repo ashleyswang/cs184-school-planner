@@ -20,6 +20,7 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewFragment
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewViewModel
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms.EventFormActivity
+import org.w3c.dom.Text
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.format.TextStyle
@@ -176,7 +177,7 @@ class EventListHelper(
             lateinit var event: Event
             val eventName: TextView = itemView.findViewById(R.id.event_name)
             val eventDate: TextView = itemView.findViewById(R.id.event_date)
-            val eventTime: CheckBox = itemView.findViewById(R.id.event_time)
+            val eventTime: TextView = itemView.findViewById(R.id.event_time)
 
             init {
                 itemView.setOnClickListener {
@@ -199,8 +200,10 @@ class EventListHelper(
             viewHolder.event = event
             viewHolder.eventName.text = event.name
             viewHolder.eventDate.text = getDateDisplayString(event.start)
-            val timeString =
-                "${getTimeDisplayString(event.start)} - ${getTimeDisplayString(event.end!!)}"
+            var timeString = "${getTimeDisplayString(event.start)}"
+            timeString +=
+                if (event.end != null) " - ${getTimeDisplayString(event.end!!)}"
+                else ""
             viewHolder.eventTime.text = timeString
         }
 

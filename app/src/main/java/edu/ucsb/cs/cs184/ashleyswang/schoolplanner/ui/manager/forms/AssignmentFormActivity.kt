@@ -48,7 +48,7 @@ class AssignmentFormActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_form_course)
+        setContentView(R.layout.activity_form_assignment)
 
         val userId = intent.getStringExtra("userId")!!
         controller = Controller(userId)
@@ -198,7 +198,7 @@ class AssignmentFormActivity : AppCompatActivity() {
 
             if (nameInput != initName) assign.name = nameInput
             if (dateInput != initDate || timeInput != initTime)
-                assign.event.start = dueDate
+                assign.date = dueDate
             if (noteInput != initNote) assign.descript = noteInput
             return true
         } catch (e: Exception) {
