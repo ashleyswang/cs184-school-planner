@@ -46,6 +46,7 @@ class CourseToolbarHelper(
         toolbar.setNavigationOnClickListener { v: View ->
             fragment.parent.model.mainLayout.visibility = View.VISIBLE
             fragment.activity?.supportFragmentManager?.popBackStack()
+            fragment.parent.model.activeCourse = null
         }
 
         // Set Listener for Course Editor

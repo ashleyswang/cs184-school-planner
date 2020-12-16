@@ -86,6 +86,9 @@ class ManagerFragment : Fragment() {
             .setOnClickListener {
                 openCourseAdder()
             }
+
+        if (model.activeCourse != null)
+            makeCourseViewFragment(model.activeCourse!!)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -111,6 +114,7 @@ class ManagerFragment : Fragment() {
                     ACTION_DEL -> {
                         model.mainLayout.visibility = View.VISIBLE
                         childFragmentManager.popBackStack()
+                        model.activeCourse = null
                     }
                 }
         }
@@ -152,6 +156,7 @@ class ManagerFragment : Fragment() {
     }
 
     fun makeCourseViewFragment(course: Course) {
+        model.activeCourse = course
         val courseFragment = CourseViewFragment(this, course)
         val id = (model.view.parent as ViewGroup).id
         Log.d(TAG, "requireActivity() ${requireActivity()}")

@@ -15,7 +15,10 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerFragment
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.helpers.AssignmentListHelper
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.helpers.CourseToolbarHelper
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.helpers.EventListHelper
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.helpers.MeetingListHelper
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms.CourseFormActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.helpers.ToolbarHelper
 
@@ -56,6 +59,9 @@ class CourseViewFragment(
     private lateinit var tabLayout: TabLayout
 
     private lateinit var toolbarHelper: CourseToolbarHelper
+    private lateinit var meetingHelper: MeetingListHelper
+    private lateinit var assignHelper: AssignmentListHelper
+    private lateinit var eventsHelper: EventListHelper
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,6 +92,9 @@ class CourseViewFragment(
 
         // Layout Helpers
         toolbarHelper = CourseToolbarHelper(this, model)
+        meetingHelper = MeetingListHelper(this, model)
+        assignHelper = AssignmentListHelper(this, model)
+        eventsHelper = EventListHelper(this, model)
         setTabEventListeners()
     }
 

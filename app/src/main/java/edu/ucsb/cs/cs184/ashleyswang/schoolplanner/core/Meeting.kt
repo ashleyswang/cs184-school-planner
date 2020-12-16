@@ -39,6 +39,8 @@ class Meeting {
             db.child("end").setValue(_end.toString())
             updateEvents("end")
         }
+    val createdOn: LocalDateTime
+        get() { return _createdOn }
 
     // [M, T, W, R, F]
     var daysToRepeat: BooleanArray
@@ -54,6 +56,7 @@ class Meeting {
     private var _name: String = "New Meeting"
     private var _start: LocalTime = LocalTime.now()
     private var _end: LocalTime = LocalTime.now()
+    private var _createdOn: LocalDateTime = LocalDateTime.now()
     private var _daysToRepeat: BooleanArray = BooleanArray(5) { false }
 
     constructor(course: Course) {
@@ -78,6 +81,8 @@ class Meeting {
             this._start = LocalTime.parse(value["start"] as String)
         if (value["end"] != null)
             this._end = LocalTime.parse(value["end"] as String)
+        if (value["createdOn"] != null)
+            this._createdOn = LocalDateTime.parse(value["createdOn"] as String)
 
         if (value["days"] != null) {
             val repeatDaysInfo = value["days"] as ArrayList<Boolean>
@@ -194,6 +199,17 @@ class Meeting {
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end.", error.toException())
+            }
+        })
+
+        db.child("createdOn").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _createdOn.toString())
+                    _createdOn = LocalDateTime.parse(value)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read creation date.", error.toException())
             }
         })
 

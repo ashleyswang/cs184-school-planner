@@ -7,10 +7,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.material.navigation.NavigationView
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.*
 
 class CourseViewViewModel : ViewModel() {
     lateinit var controller: Controller
@@ -24,9 +21,8 @@ class CourseViewViewModel : ViewModel() {
     lateinit var eventsLayout: ConstraintLayout
 
     // Term/DB Information
-
-    var termsList: ArrayList<Term> = arrayListOf<Term>()
-    var courseList: ArrayList<Course> = arrayListOf<Course>()
+    var meetList: ArrayList<Meeting> = arrayListOf<Meeting>()
+    var assignList: ArrayList<Assignment> = arrayListOf<Assignment>()
     var eventsList: ArrayList<Event> = arrayListOf<Event>()
 
     // Other UI States
