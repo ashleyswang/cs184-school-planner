@@ -41,11 +41,29 @@ class CalendarFragment : Fragment() {
         model =
             ViewModelProviders.of(this).get(CalendarViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_calendar, container, false)
+        var calendarView = root.findViewById<CalendarView>(R.id.calendarView)
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            var monthFix = month+1
+            var monthString = monthFix.toString()
+            if(month < 10) monthString = "0$monthString"
+            var dayOfMonthString = dayOfMonth.toString()
+            if(dayOfMonth < 10) dayOfMonthString = "0$dayOfMonthString"
+            selectedDate = "$year-$monthString-$dayOfMonthString"
+            makeEventList()
+//            Toast.makeText(
+//                requireContext().applicationContext,
+//                "Showing events for $selectedDate",
+//                Toast.LENGTH_SHORT
+//            ).show()
+        }
         controller = (activity as MainActivity).controller
         eventList = arrayListOf<Event>()
-        makeEventList()
+        val sdf = SimpleDateFormat("MM/dd/yyyy")
+        selectedDate = sdf.format(Date(calendarView.date))
+        //init recyclerview
         var calRecyclerView = root.findViewById<RecyclerView>(R.id.calRecyclerView)
         adapter = CalEventAdapter(eventList)
+        makeEventList()
         calRecyclerView.adapter = adapter
         calRecyclerView.layoutManager = LinearLayoutManager(requireContext().applicationContext)
         val dividerItemDecoration = DividerItemDecoration(
@@ -53,18 +71,7 @@ class CalendarFragment : Fragment() {
             (calRecyclerView.layoutManager as LinearLayoutManager).orientation
         )
         calRecyclerView.addItemDecoration(dividerItemDecoration)
-        var calendarView = root.findViewById<CalendarView>(R.id.calendarView)
-        val sdf = SimpleDateFormat("MM/dd/yyyy")
-        selectedDate = sdf.format(Date(calendarView.date))
-        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
-            selectedDate = "$month/$dayOfMonth/$year"
-            makeEventList()
-            Toast.makeText(
-                requireContext().applicationContext,
-                "Showing events for $selectedDate",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+
         return root
     }
 
@@ -76,22 +83,35 @@ class CalendarFragment : Fragment() {
     private fun makeEventList() {
         if(eventList.size > 0) eventList.clear()
         for(term in controller.terms){
-            eventList.addAll(term.value.events.values)
+            for(event in term.value.events){
+                var date = event.value.start.toString()
+                date = date.dropLast(6)
+                //Log.d(TAG, "$date vs $selectedDate")
+                if(date == selectedDate) eventList.add(event.value)
+            }
+            for(course in term.value.courses){
+                for(event in course.value.events){
+                    var date = event.value.start.toString()
+                    date = date.dropLast(6)
+                    //Log.d(TAG, "$date vs $selectedDate")
+                    if(date == selectedDate) eventList.add(event.value)
+                }
+            }
         }
         eventList.sortBy { it.start }
-        //adapter.notifyDataSetChanged()
+        adapter.notifyDataSetChanged()
     }
 
-    private fun makeCalEventAdapter() {
-        adapter = CalEventAdapter(eventList)
-        calRecyclerView.adapter = adapter
-        calRecyclerView.layoutManager = LinearLayoutManager(requireContext().applicationContext)
-        val dividerItemDecoration = DividerItemDecoration(
-            calRecyclerView.context,
-            (calRecyclerView.layoutManager as LinearLayoutManager).orientation
-        )
-        calRecyclerView.addItemDecoration(dividerItemDecoration)
-    }
+//    private fun makeCalEventAdapter() {
+//        adapter = CalEventAdapter(eventList)
+//        calRecyclerView.adapter = adapter
+//        calRecyclerView.layoutManager = LinearLayoutManager(requireContext().applicationContext)
+//        val dividerItemDecoration = DividerItemDecoration(
+//            calRecyclerView.context,
+//            (calRecyclerView.layoutManager as LinearLayoutManager).orientation
+//        )
+//        calRecyclerView.addItemDecoration(dividerItemDecoration)
+//    }
 
     inner class CalEventAdapter(private val events: List<Event>)
         : RecyclerView.Adapter<CalEventAdapter.ViewHolder>()
@@ -102,6 +122,7 @@ class CalendarFragment : Fragment() {
             val eventName: TextView = itemView.findViewById(R.id.event_item_name)
             var eventScope: TextView = itemView.findViewById(R.id.event_item_scope)
             val eventStartTime: TextView = itemView.findViewById(R.id.event_item_start_time)
+            val eventCourseName: TextView = itemView.findViewById(R.id.event_course_name)
 
             init {
                 itemView.setOnClickListener(this)
@@ -125,7 +146,7 @@ class CalendarFragment : Fragment() {
 
             // Set Course Item Values
             viewHolder.eventName.text = event.name
-            viewHolder.eventScope.text = scope.name
+            viewHolder.eventCourseName.text = scope.name
             if (event != null) {
                 val dayOfWeek =
                     if (event.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
@@ -137,14 +158,12 @@ class CalendarFragment : Fragment() {
                     if (event.start.monthValue < 10) "0${event.start.monthValue}"
                     else event.start.monthValue.toString()
                 val year = event.start.year.toString()
-                if(selectedDate == "$dayOfMonth/$month/$year") { //Check if event on selected day
-                    val dateString = "$dayOfWeek $month/$dayOfMonth"
-                    val hour = event.start.hour
-                    val minute = event.start.minute
-                    val timeString = "$hour:$minute"
-                    viewHolder.eventScope.text = dateString
-                    viewHolder.eventStartTime.text = timeString
-                }
+                val dateString = "$dayOfWeek $month/$dayOfMonth"
+                val hour = event.start.hour
+                val minute = event.start.minute
+                val timeString = "$hour:$minute"
+                viewHolder.eventScope.text = dateString
+                viewHolder.eventStartTime.text = timeString
             } else
                 viewHolder.eventName.text = "No upcoming events"
         }

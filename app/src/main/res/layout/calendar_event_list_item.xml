@@ -17,6 +17,16 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/event_course_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:text="Course Name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
             android:id="@+id/event_item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -26,28 +36,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/event_item_start_time"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="right"
+            android:text="12:00 XM"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/event_item_scope"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            android:text="Testing Event Scope"
+            android:gravity="right"
+            android:text="W 12/16"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/event_item_start_time"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:paddingBottom="10dp"
-        android:gravity="right"
-        android:text="12:00 XM"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 </LinearLayout>
