@@ -101,6 +101,7 @@ class LoginPage : AppCompatActivity() {
         var username: String = writeFile()
         var signInIntent: Intent = Intent(this, MainActivity::class.java)
         signInIntent.putExtra("isGoogleSignIn", false)
+        signInIntent.putExtra("user", username)
         startActivity(signInIntent)
     }
 
@@ -132,7 +133,7 @@ class LoginPage : AppCompatActivity() {
             data = File(path).bufferedReader().readLine().toString()
             val re = Regex("[^A-Za-z0-9 ]") //only alphanumeric
             data = re.replace(data, "")
-            Toast.makeText(this, "App has read the following data: " + data, Toast.LENGTH_LONG).show()
+            //Toast.makeText(this, "App has read the following data: " + data, Toast.LENGTH_LONG).show()
             return data
         }
         catch (e: FileNotFoundException) {
