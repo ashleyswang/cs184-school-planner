@@ -260,11 +260,8 @@ class AssignmentFormActivity : AppCompatActivity() {
 
             if (!notifInput && initNotif)
                 assign.event.notifTime = null
-            else if (notifInput) {
-                if (!notifDuration.equals(initNotifDuration)) {
-                    assign.event.notifTime = notifDuration
-                }
-            }
+            else if (notifInput && notifDuration != initNotifDuration)
+                assign.event.notifTime = notifDuration
 
             return true
         } catch (e: Exception) {

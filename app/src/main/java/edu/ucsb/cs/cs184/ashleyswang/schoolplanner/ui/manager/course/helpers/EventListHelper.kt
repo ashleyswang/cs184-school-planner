@@ -145,6 +145,8 @@ class EventListHelper(
         intent.putExtra("eventName", event.name)
         intent.putExtra("eventStart", event.start.toString())
         intent.putExtra("eventEnd", event.end!!.toString())
+        if (event.notifTime != null)
+            intent.putExtra("eventNotif", event.notifTime.toString())
         fragment.startActivity(intent)
     }
 
