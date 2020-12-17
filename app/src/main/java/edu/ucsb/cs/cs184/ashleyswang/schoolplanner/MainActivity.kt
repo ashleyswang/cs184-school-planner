@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.navigation.findNavController
@@ -112,6 +111,10 @@ class MainActivity : AppCompatActivity() {
                                                             continue
                                                         }
                                                         val notificationTime: Long = LocalDateTime.parse(endTime).minus(Duration.parse(notifTime)).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()
+                                                        if (notificationTime < System.currentTimeMillis()) {
+                                                            Log.d("notificationTime", "notificationTime has passed, will not be creating a notification")
+                                                            continue
+                                                        }
                                                         val createdOn: String? = event.child("createdOn").getValue<String>()
                                                         if (createdOn == null) {
                                                             Log.d("timestamp", "timestamp is null")
@@ -123,9 +126,9 @@ class MainActivity : AppCompatActivity() {
                                                             Log.d("name", "name is null")
                                                             continue
                                                         }
-                                                        var id: String? = event.key.toString()//event.child("id").getValue<String>()
+                                                        var id: String = event.key.toString()
                                                         if (id == null) {
-                                                            Log.d("id", "id is nullff")
+                                                            Log.d("id", "id is null")
                                                             continue
                                                         }
                                                         Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
@@ -145,6 +148,51 @@ class MainActivity : AppCompatActivity() {
                                         else {
                                             Log.d("course", "course.events does not exist")
                                             continue
+                                        }
+
+                                        if (course.hasChild("meet")) {
+                                            val meets = course.child("meet")
+                                            if (meets.hasChildren()) {
+                                                for (meet in meets.children) {
+                                                    var name: String? = meet.child("name").getValue<String>()
+                                                    if (name == null) {
+                                                        Log.d("[meet] name", "name is null")
+                                                        continue
+                                                    }
+                                                    val createdOn: String? = meet.child("createdOn").getValue<String>()
+                                                    if (createdOn == null) {
+                                                        Log.d("[meet] createdOn", "createdOn is null")
+                                                        continue
+                                                    }
+                                                    val createdOnInSeconds: Int = (LocalDateTime.parse(createdOn).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()/1000).toInt()
+                                                    val days = meet.child("days")
+                                                    if (days == null) {
+                                                        Log.d("[meet] days", "days is null")
+                                                        continue
+                                                    }
+                                                    val notifyToday = willNotifyToday(days)
+                                                    if (notifyToday == false) {
+                                                        Log.d("[meet] notifyToday", "[meet] won't be notifying today")
+                                                        continue
+                                                    }
+                                                    val start: String? = meet.child("start").getValue<String>()
+                                                    if (start == null) {
+                                                        Log.d("[meet] start", "[meet] start is null")
+                                                        continue
+                                                    }
+                                                    val notificationTime = calculateMeetingNotificationTime(start)
+                                                    if (notificationTime < System.currentTimeMillis()) {
+                                                        Log.d("[meet] notifyTime", "notifyTime is past current Time, won't be sending notification")
+                                                        continue
+                                                    }
+                                                    val id: String = meet.key.toString()
+                                                    if (id == null) {
+                                                        Log.d("[meet] id", "id is null")
+                                                    }
+                                                    Log.d("[For each term] [meet] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
+                                                    sendOnChannel(name, createdOnInSeconds, notificationTime, id)
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -201,8 +249,8 @@ class MainActivity : AppCompatActivity() {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId()).format(format)
     }
 
-    fun sendOnChannel(name: String, timestampInSeconds: Int, notificationTime: Long, id: String) {
-        Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
+    fun sendOnChannel(name: String, createdOnInSeconds: Int, notificationTime: Long, id: String) {
+        //Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
 
         var notification = NotificationCompat.Builder(this, AppNotificationChannel.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_baseline_calendar_today_24)
@@ -215,9 +263,9 @@ class MainActivity : AppCompatActivity() {
             //source: https://stackoverflow.com/questions/42578842/android-getparcelableextra-object-always-returns-null
             .build() //this creates the notification
         val intent = Intent(this, NotificationsBroadcastReceiver::class.java)
-        intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, id)
+        intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, createdOnInSeconds) //don't use id here since it's string
         intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_MESSAGE, notification)
-        val pendingIntent = PendingIntent.getBroadcast(this, timestampInSeconds, intent, PendingIntent.FLAG_CANCEL_CURRENT)
+        val pendingIntent = PendingIntent.getBroadcast(this, createdOnInSeconds, intent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
@@ -238,6 +286,36 @@ class MainActivity : AppCompatActivity() {
             manager.createNotificationChannel(channel)
         }
         Log.d("MainActivity", "createdNotificationChannel in Main")
+    }
+
+    fun willNotifyToday(notifyDates: DataSnapshot): Boolean? {
+        var dateToday: String = LocalDateTime.now().dayOfWeek.toString()
+        return when (dateToday) {
+            "MONDAY" -> {
+                notifyDates.child("0").getValue<Boolean>()
+            }
+            "TUESDAY" -> {
+                notifyDates.child("1").getValue<Boolean>()
+            }
+            "WEDNESDAY" -> {
+                notifyDates.child("2").getValue<Boolean>()
+            }
+            "THURSDAY" -> {
+                notifyDates.child("3").getValue<Boolean>()
+            }
+            "FRIDAY" -> {
+                notifyDates.child("4").getValue<Boolean>()
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
+    fun calculateMeetingNotificationTime(notifyTime: String): Long {
+        var simpleFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        var completeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        return LocalDateTime.parse(LocalDateTime.now().format(simpleFormat) + " " + notifyTime, completeFormat).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()
     }
 
 }
