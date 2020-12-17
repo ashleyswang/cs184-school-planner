@@ -26,4 +26,8 @@
     <string name="set_as_current_term">Set As Current Term</string>
 
 
+    <!-- CALENDAR FRAGMENT -->
+    <string name="select_date">Select a Date</string>
+
+
 </resources>

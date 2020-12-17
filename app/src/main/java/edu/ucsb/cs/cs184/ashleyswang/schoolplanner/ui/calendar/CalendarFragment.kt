@@ -5,9 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CalendarView
 import android.widget.TextView
-import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -18,11 +20,13 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
-import kotlinx.android.synthetic.main.fragment_calendar.*
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.*
+
 
 class CalendarFragment : Fragment() {
 
@@ -33,6 +37,8 @@ class CalendarFragment : Fragment() {
     private lateinit var eventList: ArrayList<Event>
     private lateinit var adapter: CalEventAdapter
     private lateinit var selectedDate: String
+    private lateinit var dateTitle: TextView
+    private lateinit var showCalendar: Button
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,25 +47,69 @@ class CalendarFragment : Fragment() {
         model =
             ViewModelProviders.of(this).get(CalendarViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_calendar, container, false)
-        var calendarView = root.findViewById<CalendarView>(R.id.calendarView)
-        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
-            var monthFix = month+1
-            var monthString = monthFix.toString()
-            if(month < 10) monthString = "0$monthString"
-            var dayOfMonthString = dayOfMonth.toString()
-            if(dayOfMonth < 10) dayOfMonthString = "0$dayOfMonthString"
-            selectedDate = "$year-$monthString-$dayOfMonthString"
-            makeEventList()
-//            Toast.makeText(
-//                requireContext().applicationContext,
-//                "Showing events for $selectedDate",
-//                Toast.LENGTH_SHORT
-//            ).show()
+        var calendarView: CalendarView = root.findViewById(R.id.calendarView)
+        var calendarConstraint: ConstraintLayout = root.findViewById(R.id.calendar_layout)
+        //var divider: View = root.findViewById(R.id.divider2)
+
+        dateTitle = root.findViewById(R.id.selected_day)
+        showCalendar = root.findViewById(R.id.showCal)
+        showCalendar.setOnClickListener() {
+            val visible = calendarView.visibility
+            if (visible == View.VISIBLE) {
+                calendarView.visibility = View.GONE
+                //divider.visibility = View.INVISIBLE
+
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(calendarConstraint)
+                constraintSet.connect(
+                    R.id.calRecyclerView,
+                    ConstraintSet.TOP,
+                    R.id.guideline2,
+                    ConstraintSet.TOP,
+                    0
+                )
+                constraintSet.connect(
+                    R.id.divider2,
+                    ConstraintSet.BOTTOM,
+                    R.id.guideline2,
+                    ConstraintSet.TOP,
+                    0
+                )
+                constraintSet.applyTo(calendarConstraint)
+            }
+            else {
+                calendarView.visibility = View.VISIBLE
+                //divider.visibility = View.VISIBLE
+
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(calendarConstraint)
+                constraintSet.connect(
+                    R.id.calRecyclerView,
+                    ConstraintSet.TOP,
+                    R.id.guideline,
+                    ConstraintSet.TOP,
+                    0
+                )
+                constraintSet.connect(
+                    R.id.divider2,
+                    ConstraintSet.BOTTOM,
+                    R.id.guideline,
+                    ConstraintSet.TOP,
+                    0
+                )
+                constraintSet.applyTo(calendarConstraint)
+            }
         }
+
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            getSelectedDate(year, month, dayOfMonth)
+        }
+
         controller = (activity as MainActivity).controller
         eventList = arrayListOf<Event>()
-        val sdf = SimpleDateFormat("MM/dd/yyyy")
+        val sdf = SimpleDateFormat("MM/dd/yyyy") // format date
         selectedDate = sdf.format(Date(calendarView.date))
+
         //init recyclerview
         var calRecyclerView = root.findViewById<RecyclerView>(R.id.calRecyclerView)
         adapter = CalEventAdapter(eventList)
@@ -72,7 +122,38 @@ class CalendarFragment : Fragment() {
         )
         calRecyclerView.addItemDecoration(dividerItemDecoration)
 
+
+        val date = Calendar.getInstance()
+        val today = sdf.format(date.time) // today
+        val m = today.substring(0, 2).toInt() - 1
+        val d = today.substring(3, 5).toInt()
+        val y = today.substring(6).toInt()
+        Log.d(TAG, "month: " + m + ", day: " + d + ", year: " + y)
+        //getSelectedDate(y, m, d) // load events from today on init
+        Log.d(TAG, "current day: " + today)
+
         return root
+    }
+
+    private fun getSelectedDate(year: Int, month: Int, dayOfMonth: Int) {
+        var monthFix = month+1
+        var monthString = monthFix.toString()
+        if(month < 10) monthString = "0$monthString"
+        var dayOfMonthString = dayOfMonth.toString()
+        if(dayOfMonth < 10) dayOfMonthString = "0$dayOfMonthString"
+        selectedDate = "$year-$monthString-$dayOfMonthString"
+
+        // set title of calendar fragment to selected date
+        var date: LocalDate = LocalDate.of(year, month + 1, dayOfMonth)
+        val day = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.US)
+        val monthName = date.month.getDisplayName(TextStyle.SHORT, Locale.US)
+        val year = date.year.toString()
+        val titleStr = "$day $monthName $dayOfMonth, $year"
+        dateTitle.text = titleStr
+
+        makeEventList()
+
+        Log.d(TAG, "selectedDate: " + selectedDate)
     }
 
     //init {
@@ -81,6 +162,7 @@ class CalendarFragment : Fragment() {
     //}
 
     private fun makeEventList() {
+        Log.d(TAG, "hello")
         if(eventList.size > 0) eventList.clear()
         for(term in controller.terms){
             for(event in term.value.events){
@@ -100,6 +182,8 @@ class CalendarFragment : Fragment() {
         }
         eventList.sortBy { it.start }
         adapter.notifyDataSetChanged()
+
+        Log.d(TAG, eventList.toString())
     }
 
 //    private fun makeCalEventAdapter() {
@@ -157,11 +241,32 @@ class CalendarFragment : Fragment() {
                 val month =
                     if (event.start.monthValue < 10) "0${event.start.monthValue}"
                     else event.start.monthValue.toString()
-                val year = event.start.year.toString()
                 val dateString = "$dayOfWeek $month/$dayOfMonth"
-                val hour = event.start.hour
+                val year = event.start.year.toString()
+
+                var hour = event.start.hour
                 val minute = event.start.minute
-                val timeString = "$hour:$minute"
+                var xm = "" // AM/PM
+
+                // single digit minute --> 0x double digit
+                val minuteStr =
+                    if(minute.toString().length == 1) "0" + minute.toString()
+                    else minute.toString()
+
+                // fix hour to be conventional
+                if (hour == 0) {
+                    hour = 12
+                    xm = "AM"
+                }
+                else if (hour < 13) {
+                    xm = "AM"
+                }
+                else {
+                    hour -= 12
+                    xm = "PM"
+                }
+
+                val timeString = "$hour:"+minuteStr+" "+xm
                 viewHolder.eventScope.text = dateString
                 viewHolder.eventStartTime.text = timeString
             } else
