@@ -50,13 +50,6 @@ class EventFormActivity : AppCompatActivity() {
     private lateinit var notifValEditText: EditText
     private lateinit var notifUnitSpinner: Spinner
 
-    private var initName: String = ""
-    private var initDate: String = ""
-    private var initStart: String = ""
-    private var initEnd: String = ""
-    private var initNotif: Boolean = false
-    private var initNotifDuration: Duration = Duration.ZERO
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_event)
@@ -156,26 +149,26 @@ class EventFormActivity : AppCompatActivity() {
     private fun setInitialValues() {
         eventId = if (editExisting) intent.getStringExtra("eventId")!! else ""
         if (editExisting) {
-            initName = intent.getStringExtra("eventName")!!
+            var eventName = intent.getStringExtra("eventName")!!
             dateValue = LocalDateTime.parse(intent.getStringExtra("eventEnd")!!)
-            initEnd = getTimeDisplayString(dateValue.hour, dateValue.minute)
+            var eventEnd = getTimeDisplayString(dateValue.hour, dateValue.minute)
             dateValue = LocalDateTime.parse(intent.getStringExtra("eventStart")!!)
-            initDate = getDateDisplayString(dateValue.year,
+            var eventDate = getDateDisplayString(dateValue.year,
                 dateValue.monthValue, dateValue.dayOfMonth)
-            initStart = getTimeDisplayString(dateValue.hour, dateValue.minute)
+            var eventStart = getTimeDisplayString(dateValue.hour, dateValue.minute)
 
             // set current course values into editor
-            nameEditText.setText(initName)
-            dateEditText.setText(initDate)
-            startEditText.setText(initStart)
-            endEditText.setText(initEnd)
+            nameEditText.setText(eventName)
+            dateEditText.setText(eventDate)
+            startEditText.setText(eventStart)
+            endEditText.setText(eventEnd)
 
-            initNotif = intent.getStringExtra("eventNotif") != null
+            var checkNotif = intent.getStringExtra("eventNotif") != null
             var notifVal: Int = 0
             var notifUnit: Int = -1
-            if (initNotif) {
-                initNotifDuration = Duration.parse(intent.getStringExtra("eventNotif")!!)
-                notifVal = initNotifDuration.toMinutes().toInt()
+            if (checkNotif) {
+                val duration = Duration.parse(intent.getStringExtra("eventNotif")!!)
+                notifVal = duration.toMinutes().toInt()
                 notifUnit = 0
                 if (notifVal % 60 == 0) {
                     notifVal /= 60
@@ -190,8 +183,8 @@ class EventFormActivity : AppCompatActivity() {
                     }
                 }
             }
-            notifSwitch.isChecked = initNotif
-            if (initNotif) {
+            notifSwitch.isChecked = checkNotif
+            if (checkNotif) {
                 notifLayout.visibility = View.VISIBLE
                 notifValEditText.setText(notifVal.toString())
                 notifUnitSpinner.setSelection(notifUnit)
@@ -276,16 +269,9 @@ class EventFormActivity : AppCompatActivity() {
 
             val event = course.events[eventId] ?: course.addEvent()
 
-            if (nameInput != initName) event.name = nameInput
-            if (dateInput != initDate || startInput != initStart)
-                event.start = startDateTime
-            if (dateInput != initDate || endInput != initEnd)
-                event.end = endDateTime
-
-            if (!notifInput && initNotif)
-                event.notifTime = null
-            else if (notifInput && notifDuration != initNotifDuration)
-                event.notifTime = notifDuration
+            val notifSetValue = if (notifInput) notifDuration else null
+            event.updateDatabase(nameInput, startDateTime, endDateTime, notifSetValue)
+            if (!notifInput) event.notifTime = null
 
             return true
         } catch (e: Exception) {

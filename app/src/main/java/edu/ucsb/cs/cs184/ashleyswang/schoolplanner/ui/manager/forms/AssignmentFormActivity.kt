@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -47,13 +48,6 @@ class AssignmentFormActivity : AppCompatActivity() {
     private lateinit var notifLayout: LinearLayout
     private lateinit var notifValEditText: EditText
     private lateinit var notifUnitSpinner: Spinner
-
-    private var initName: String = ""
-    private var initDate: String = ""
-    private var initTime: String = ""
-    private var initNote: String = ""
-    private var initNotif: Boolean = false
-    private var initNotifDuration: Duration = Duration.ZERO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -140,24 +134,24 @@ class AssignmentFormActivity : AppCompatActivity() {
     private fun setInitialValues() {
         assignId = if (editExisting) intent.getStringExtra("assignId")!! else ""
         if (editExisting) {
-            initName = intent.getStringExtra("assignName")!!
+            var assignName = intent.getStringExtra("assignName")!!
             dueDate = LocalDateTime.parse(intent.getStringExtra("assignDue")!!)
-            initDate = getDateDisplayString(dueDate.year, dueDate.monthValue, dueDate.dayOfMonth)
-            initTime = getTimeDisplayString(dueDate.hour, dueDate.minute)
-            initNote = intent.getStringExtra("descript") ?: ""
+            var assignDate = getDateDisplayString(dueDate.year, dueDate.monthValue, dueDate.dayOfMonth)
+            var assignTime = getTimeDisplayString(dueDate.hour, dueDate.minute)
+            var assignNote = intent.getStringExtra("descript") ?: ""
 
             // set current course values into editor
-            nameEditText.setText(initName)
-            dateEditText.setText(initDate)
-            timeEditText.setText(initTime)
-            noteEditText.setText(initNote)
+            nameEditText.setText(assignName)
+            dateEditText.setText(assignDate)
+            timeEditText.setText(assignTime)
+            noteEditText.setText(assignNote)
 
-            initNotif = intent.getStringExtra("assignNotif") != null
+            val checkNotif = intent.getStringExtra("assignNotif") != null
             var notifVal: Int = 0
             var notifUnit: Int = -1
-            if (initNotif) {
-                initNotifDuration = Duration.parse(intent.getStringExtra("assignNotif")!!)
-                notifVal = initNotifDuration.toMinutes().toInt()
+            if (checkNotif) {
+                val duration = Duration.parse(intent.getStringExtra("assignNotif")!!)
+                notifVal = duration.toMinutes().toInt()
                 notifUnit = 0
                 if (notifVal % 60 == 0) {
                     notifVal /= 60
@@ -172,8 +166,8 @@ class AssignmentFormActivity : AppCompatActivity() {
                     }
                 }
             }
-            notifSwitch.isChecked = initNotif
-            if (initNotif) {
+            notifSwitch.isChecked = checkNotif
+            if (checkNotif) {
                 notifLayout.visibility = View.VISIBLE
                 notifValEditText.setText(notifVal.toString())
                 notifUnitSpinner.setSelection(notifUnit)
@@ -251,18 +245,15 @@ class AssignmentFormActivity : AppCompatActivity() {
                 }
             }
 
-            val assign = course.assign[assignId] ?: course.addAssign()
+            val notifSetValue = if (notifInput) notifDuration else null
 
-            if (nameInput != initName) assign.name = nameInput
-            if (dateInput != initDate || timeInput != initTime)
-                assign.date = dueDate
-            if (noteInput != initNote) assign.descript = noteInput
-
-            if (!notifInput && initNotif)
-                assign.event.notifTime = null
-            else if (notifInput && notifDuration != initNotifDuration)
-                assign.event.notifTime = notifDuration
-
+            if (editExisting) {
+                val assign = course.assign[assignId]!!
+                assign.updateDatabase(nameInput, dueDate, noteInput, notifSetValue)
+                if (!notifInput) assign.event.notifTime = null
+            } else {
+                course.addAssign(nameInput, dueDate, noteInput, notifSetValue)
+            }
             return true
         } catch (e: Exception) {
             return false

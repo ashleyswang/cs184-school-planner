@@ -8,6 +8,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 class Event {
@@ -78,11 +79,6 @@ class Event {
         this.id = Scope.randomString()
         this.scope = scope
         this.db = scope.db.child("events").child(id)
-        this.name = "New Event"
-        this.start = LocalDateTime.now()
-        this.end = null
-        this.isAssign = false
-        this.db.child("createdOn").setValue(_createdOn)
         _addDbListener()
     }
 
@@ -108,6 +104,31 @@ class Event {
             this._notifTime = Duration.parse(value["notifTime"] as String)
 
         _addDbListener()
+    }
+
+    fun updateDatabase(
+        name: String? = null,
+        start: LocalDateTime? = null,
+        end: LocalDateTime? = null,
+        notifTime: Duration? = null,
+        isAssign: Boolean = false
+    ) {
+        name?.let { _name = it }
+        start?.let { _start = it }
+        end?.let { _end = it }
+        notifTime?.let { _notifTime = it }
+        _isAssign = isAssign
+
+        val map = mapOf<String, Any?>(
+            "createdOn" to  _createdOn,
+            "name"      to  _name,
+            "start"     to  _start.toString(),
+            "end"       to  _end?.toString(),
+            "notifTime" to  _notifTime?.toString(),
+            "isAssign"  to  _isAssign
+        )
+
+        db.setValue(map)
     }
 
     fun getDuration(): Duration {

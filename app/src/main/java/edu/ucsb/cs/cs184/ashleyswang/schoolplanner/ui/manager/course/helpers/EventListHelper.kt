@@ -64,8 +64,7 @@ class EventListHelper(
 
     private fun makeEventList() {
         eventsList.clear()
-        eventsList.addAll(course.events.values
-            .filter { it.recurId == null && !it.isAssign && it.end != null })
+        eventsList.addAll(course.events.values.filter { !it.isAssign && it.end != null })
         eventsList.sortBy { it.start }
         adapter.notifyDataSetChanged()
     }
@@ -82,50 +81,12 @@ class EventListHelper(
         course.db.child("events").addValueEventListener(
             object: ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val oldList = eventsList
                     makeEventList()
-
-                    val removedItems = oldList.minus(eventsList)
-                    for (item in removedItems)
-                        removeItemChangeListener(item)
-
-                    val addedItems = eventsList.minus(oldList)
-                    for (item in addedItems)
-                        setItemChangeListener(item)
                 }
                 override fun onCancelled(error: DatabaseError) {
                     Log.w(TAG, "Failed to read database.", error.toException())
                 }
             })
-    }
-
-    private fun makeItemChangeListener(event: Event): ValueEventListener {
-        return object: ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<Any>()
-                if (value != null) {
-                    val index = eventsList.indexOf(event)
-                    adapter.notifyItemChanged(index)
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read database.", error.toException())
-            }
-        }
-    }
-
-    private fun setItemChangeListener(event: Event) {
-        if (itemListeners.get(event.id) == null) {
-            val listener = makeItemChangeListener(event)
-            event.db.addValueEventListener(listener)
-            itemListeners.put(event.id, listener)
-        }
-    }
-
-    private fun removeItemChangeListener(event: Event) {
-        val listener = itemListeners.get(event.id)
-        listener?.let { event.db.removeEventListener(it) }
-        itemListeners.remove(event.id)
     }
 
     private fun openEventAdder() {

@@ -6,7 +6,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import java.time.Duration
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class Assignment {
     val TAG: String = "Assignment"
@@ -14,8 +16,9 @@ class Assignment {
     val course: Course
     val db: DatabaseReference
     val eventId: String
+        get() { return _eventId }
     val event: Event
-        get() { return course.events[this.eventId]!! }
+        get() { return course.events[_eventId]!! }
 
     var name: String
         get() { return event.name }
@@ -45,17 +48,15 @@ class Assignment {
             db.child("completed").setValue(_completed)
         }
 
+    private var _eventId: String = ""
     private var _descript: String = ""
     private var _completed: Boolean = false
 
     constructor(course: Course, eventId: String) {
         this.id = Scope.randomString()
         this.course = course
-        this.eventId = eventId
+        this._eventId = eventId
         this.db = course.db.child("assign").child(id)
-        this.db.child("eventId").setValue(eventId)
-        this.completed = _completed
-        this.name = "New Assignment"
         _addDbListener()
     }
 
@@ -63,14 +64,47 @@ class Assignment {
         this.id = key
         this.course = course
         this.db = course.db.child("assign").child(id)
-        this.eventId = value["eventId"] as String
-
+        this._eventId = value["eventId"] as String? ?: ""
         this._descript = value["descript"] as String? ?: ""
         this._completed = value["completed"] as Boolean? ?: false
         _addDbListener()
     }
 
+    fun updateDatabase(
+        name: String? = null,
+        date: LocalDateTime? = null,
+        descript: String? = null,
+        notifTime: Duration? = null,
+        completed: Boolean = false
+    ) {
+        name?.let { this.name = it }
+        date?.let { this.date = it }
+        notifTime?.let { event.notifTime = it }
+        descript?.let { _descript = it }
+        _completed = completed
+
+        val map = mapOf<String, Any?>(
+            "eventId"   to  _eventId,
+            "name"      to  this.name,
+            "date"      to  this.date.toString(),
+            "descript"  to  _descript,
+            "completed" to  _completed
+        )
+
+        db.setValue(map)
+    }
+
     private fun _addDbListener() {
+        db.child("eventId").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _eventId) _eventId = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read event id.", error.toException())
+            }
+        })
+
         db.child("descript").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
