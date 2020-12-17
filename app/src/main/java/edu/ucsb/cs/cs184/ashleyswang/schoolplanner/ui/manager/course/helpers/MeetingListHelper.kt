@@ -101,6 +101,8 @@ class MeetingListHelper(
         intent.putExtra("meetStart", meet.start.toString())
         intent.putExtra("meetEnd", meet.end.toString())
         intent.putExtra("meetRecur", meet.daysToRepeat)
+        if (meet.notifTime != null)
+            intent.putExtra("meetNotif", meet.notifTime.toString())
         fragment.startActivity(intent)
     }
 

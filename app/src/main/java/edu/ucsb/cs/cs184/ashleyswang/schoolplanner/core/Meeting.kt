@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -38,6 +39,15 @@ class Meeting {
         }
     val createdOn: LocalDateTime
         get() { return _createdOn }
+    var notifTime: Duration?
+        get() { return _notifTime }
+        set(value) {
+            _notifTime = value
+            if (_notifTime != null)
+                db.child("notifTime").setValue(_notifTime.toString())
+            else
+                db.child("notifTime").removeValue()
+        }
 
     // [M, T, W, R, F]
     var daysToRepeat: BooleanArray
@@ -51,6 +61,7 @@ class Meeting {
     private var _start: LocalTime = LocalTime.now()
     private var _end: LocalTime = LocalTime.now()
     private var _createdOn: LocalDateTime = LocalDateTime.now()
+    private var _notifTime: Duration? = null
     private var _daysToRepeat: BooleanArray = BooleanArray(5) { false }
 
     constructor(course: Course) {
@@ -78,6 +89,8 @@ class Meeting {
             this._end = LocalTime.parse(value["end"] as String)
         if (value["createdOn"] != null)
             this._createdOn = LocalDateTime.parse(value["createdOn"] as String)
+        if (value["notifTime"] != null)
+            this._notifTime = Duration.parse(value["notifTime"] as String)
 
         if (value["days"] != null) {
             val repeatDaysInfo = value["days"] as ArrayList<Boolean>
@@ -100,6 +113,19 @@ class Meeting {
                     event.end = event.end!!.withHour(end.hour).withMinute(end.minute)
             }
         }
+    }
+
+    fun meetsOnDay(day: DayOfWeek): Boolean {
+        var dayOfWeek: Int
+        when (day) {
+            DayOfWeek.MONDAY -> dayOfWeek = 0
+            DayOfWeek.TUESDAY -> dayOfWeek = 1
+            DayOfWeek.WEDNESDAY -> dayOfWeek = 2
+            DayOfWeek.THURSDAY -> dayOfWeek = 3
+            DayOfWeek.FRIDAY -> dayOfWeek = 4
+            else -> dayOfWeek = -1
+        }
+        return (dayOfWeek > 0) && daysToRepeat[dayOfWeek]
     }
 
     fun removeEvents(index: Int) {
@@ -199,6 +225,17 @@ class Meeting {
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read creation date.", error.toException())
+            }
+        })
+
+        db.child("notifTime").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _notifTime.toString())
+                    _notifTime = Duration.parse(value)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
             }
         })
 

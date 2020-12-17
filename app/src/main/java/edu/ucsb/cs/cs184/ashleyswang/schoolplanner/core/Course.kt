@@ -86,9 +86,9 @@ class Course : Scope {
         val event: Event =
             Event(this)
         _events.put(event.id, event)
+        event.isAssign = true
         val assign: Assignment = Assignment(this, event.id)
         _assign.put(assign.id, assign)
-        event.isAssign = true
         return assign
     }
 
