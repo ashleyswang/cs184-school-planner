@@ -41,15 +41,15 @@ class Event {
         set(value: RecurringEvent?) {
             _recur = value
         }
-    var timestamp: Int //this is System.CurrentTimeMillis/1000 to be put into seconds
+    var timestamp: String //this is System.CurrentTimeMillis/1000 to be put into seconds
         get() { return _timestamp }
-        set(value: Int) {
+        set(value: String) {
             _timestamp = value
-            db.child("timestamp").setValue(_timestamp.toString())
+            db.child("timestamp").setValue(_timestamp)
         }
-    var notificationTimes: MutableMap<String, Long>
+    var notificationTimes: MutableMap<String, String>
         get() { return _notifications }
-        set(value: MutableMap<String, Long>) { //this setter sets an entire group, should have individual setter as well
+        set(value: MutableMap<String, String>) { //this setter sets an entire group, should have individual setter as well
             _notifications = value
             _notifications.forEach{
                 db.child("notifications").child(it.key).setValue(it.value)
@@ -67,8 +67,8 @@ class Event {
     private var _start: LocalDateTime = LocalDateTime.now()
     private var _end: LocalDateTime? = null
     private var _recur: RecurringEvent? = null
-    private var _timestamp: Int = (System.currentTimeMillis()/1000).toInt()
-    private var _notifications: MutableMap<String, Long> = mutableMapOf<String, Long>()
+    private var _timestamp: String = LocalDateTime.now().format(format)
+    private var _notifications: MutableMap<String, String> = mutableMapOf<String, String>()
     /*
      * Constructor:
      * @params: scope: Scope - scope tied to deadline
@@ -83,8 +83,8 @@ class Event {
         this.start = LocalDateTime.now()
         this.end = null
         this.recur = null
-        this.timestamp = (System.currentTimeMillis()/1000).toInt() //current time is 31-bit. times 2 means it can last for another 40 years.
-        this._notifications = mutableMapOf<String, Long>()
+        this.timestamp = LocalDateTime.now().format(format) //current time is 31-bit. times 2 means it can last for another 40 years.
+        this._notifications = mutableMapOf<String, String>()
         _addDbListener()
     }
 
@@ -103,7 +103,7 @@ class Event {
         if (value["end"] != null)
             this._end = LocalDateTime.parse(value["end"] as String)
         if (value["timestamp"] != null)
-            this._timestamp = (value["timestamp"] as String).toInt()
+            this._timestamp = value["timestamp"] as String
 
         if (value["recur"] != null) {
             val recurInfo = value["recur"] as Map<String, Any>
@@ -117,7 +117,7 @@ class Event {
         if (value["notifications"] != null) {
             var notifications: Map<String, Any> = value["notifications"] as Map<String, Any>
             for (notification in notifications) {
-                var value: Long = (notification.value) as Long
+                var value: String = (notification.value) as String
                 this._notifications.put(notification.key, value)
             }
         }
@@ -131,17 +131,17 @@ class Event {
             return Duration.between(_start, _end)
     }
 
-    fun addNotification(value: Long) {
+    fun addNotification(value: String) {
         notificationTimes.put(Scope.randomString(), value)
         db.child("notifications").setValue(value)
     }
 
-    fun removeNotification(value: Long) {
+    fun removeNotification(value: String) {
         var temp = db.child("notifications").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var children = snapshot.children
                 for (child in children) {
-                    var valueLong: Long? = child.getValue<Long>()
+                    var valueLong: String? = child.getValue<String>()
                     if (valueLong == value) {
                         child.key?.let { db.child("notifications").child(it).removeValue() }
                         notificationTimes.remove(child.key)

@@ -1,12 +1,18 @@
 package edu.ucsb.cs.cs184.ashleyswang.schoolplanner
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -15,12 +21,12 @@ import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.AppNotificationChannel
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.NotificationsBroadcastReceiver
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.file.Files.exists
-import kotlin.math.sign
 
 class LoginPage : AppCompatActivity() {
     private lateinit var button: SignInButton
@@ -35,6 +41,16 @@ class LoginPage : AppCompatActivity() {
 // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         // Configure sign-in to request the user's ID, email address, and basic
 // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        var file: File = File(this.filesDir.absolutePath + "/GuestId.txt")
+        if (file.exists()) {
+            //continue using this
+            var username: String = readFile()
+            var signInIntent: Intent = Intent(this, MainActivity::class.java)
+            signInIntent.putExtra("isGoogleSignIn", false)
+            signInIntent.putExtra("user", username)
+            startActivity(signInIntent)
+        }
+
         val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .build()
@@ -75,22 +91,12 @@ class LoginPage : AppCompatActivity() {
     private fun guestSignIn() {
         Toast.makeText(this, "opening Guest Sign in!", Toast.LENGTH_LONG).show()
         var file: File = File(this.filesDir.absolutePath + "/GuestId.txt")
-        if (file.exists()) {
-            //continue using this
-            var username: String = readFile()
-            var signInIntent: Intent = Intent(this, MainActivity::class.java)
-            signInIntent.putExtra("isGoogleSignIn", false)
-            signInIntent.putExtra("user", username)
-            startActivity(signInIntent)
-        }
-        else {
-            //writeToFile and pass along our guestId
-            var username: String = writeFile()
-            var signInIntent: Intent = Intent(this, MainActivity::class.java)
-            signInIntent.putExtra("isGoogleSignIn", false)
-            signInIntent.putExtra("user", username)
-            startActivity(signInIntent)
-        }
+        //writeToFile and pass along our guestId
+        var username: String = writeFile()
+        var signInIntent: Intent = Intent(this, MainActivity::class.java)
+        signInIntent.putExtra("isGoogleSignIn", false)
+        signInIntent.putExtra("user", username)
+        startActivity(signInIntent)
     }
 
     private fun writeFile(): String {
@@ -168,4 +174,5 @@ class LoginPage : AppCompatActivity() {
             //updateUI(null)
         }
     }
+
 }
