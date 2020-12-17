@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.navigation.findNavController
@@ -166,7 +165,11 @@ class MainActivity : AppCompatActivity() {
                                                         continue
                                                     }
                                                     val createdOnInSeconds: Int = (LocalDateTime.parse(createdOn).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()/1000).toInt()
-                                                    val days: Map<String, Boolean>? = meet.getValue<Map<String, Boolean>>()
+                                                    val days = meet.child("days")
+                                                    if (days == null) {
+                                                        Log.d("[meet] days", "days is null")
+                                                        continue
+                                                    }
                                                     val notifyToday = willNotifyToday(days)
                                                     if (notifyToday == false) {
                                                         Log.d("[meet] notifyToday", "[meet] won't be notifying today")
@@ -285,23 +288,23 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "createdNotificationChannel in Main")
     }
 
-    fun willNotifyToday(notifyDates: Map<String, Boolean>?): Boolean? {
+    fun willNotifyToday(notifyDates: DataSnapshot): Boolean? {
         var dateToday: String = LocalDateTime.now().dayOfWeek.toString()
         return when (dateToday) {
             "MONDAY" -> {
-                notifyDates?.get("0")
+                notifyDates.child("0").getValue<Boolean>()
             }
             "TUESDAY" -> {
-                notifyDates?.get("1")
+                notifyDates.child("1").getValue<Boolean>()
             }
             "WEDNESDAY" -> {
-                notifyDates?.get("2")
+                notifyDates.child("2").getValue<Boolean>()
             }
             "THURSDAY" -> {
-                notifyDates?.get("3")
+                notifyDates.child("3").getValue<Boolean>()
             }
             "FRIDAY" -> {
-                notifyDates?.get("4")
+                notifyDates.child("4").getValue<Boolean>()
             }
             else -> {
                 false
