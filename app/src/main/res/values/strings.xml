@@ -28,5 +28,12 @@
     <string name="title_activity_assign_form">AssignmentFormActivity</string>
     <string name="title_activity_event_form">EventFormActivity</string>
 
+    <string-array name="notif_options">
+        <item>Select Option</item>
+        <item>Minutes</item>
+        <item>Hours</item>
+        <item>Days</item>
+        <item>Weeks</item>
+    </string-array>
 
 </resources>
