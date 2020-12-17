@@ -9,6 +9,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -152,16 +153,16 @@ class AssignmentFormActivity : AppCompatActivity() {
             if (checkNotif) {
                 val duration = Duration.parse(intent.getStringExtra("assignNotif")!!)
                 notifVal = duration.toMinutes().toInt()
-                notifUnit = 0
+                notifUnit = 1
                 if (notifVal % 60 == 0) {
                     notifVal /= 60
-                    notifUnit = 1
+                    notifUnit = 2
                     if (notifVal % 24 == 0) {
                         notifVal /= 24
-                        notifUnit = 2
+                        notifUnit = 3
                         if (notifVal % 7 == 0) {
                             notifVal /= 7
-                            notifUnit = 3
+                            notifUnit = 4
                         }
                     }
                 }
@@ -238,10 +239,10 @@ class AssignmentFormActivity : AppCompatActivity() {
             if (notifInput) {
                 when (notifUnitInput) {
                     -1 -> throw Exception()
-                    0  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
-                    1  -> notifDuration = Duration.ofHours(notifValInput.toLong())
-                    2  -> notifDuration = Duration.ofDays(notifValInput.toLong())
-                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
+                    1  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    4  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
                 }
             }
 

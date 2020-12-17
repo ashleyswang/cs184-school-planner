@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity() {
             .setContentText("")
             //.setAutoCancel(true) //allows user to dismiss when tapped
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_REMINDER) //this is optional, make sure it creates a category
+            //.setCategory(NotificationCompat.CATEGORY_REMINDER) //this is optional, make sure it creates a category
             //.setContentText(pendingIntent.toString()) //clickable notification. NOTE: If we do .putExtra() a long time after we create Intent, it gives us null.
             //source: https://stackoverflow.com/questions/42578842/android-getparcelableextra-object-always-returns-null
             .build() //this creates the notification
