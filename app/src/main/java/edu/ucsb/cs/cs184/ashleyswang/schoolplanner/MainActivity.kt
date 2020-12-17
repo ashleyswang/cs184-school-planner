@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                                                     if (id == null) {
                                                         Log.d("[meet] id", "id is null")
                                                     }
-                                                    Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
+                                                    Log.d("[For each term] [meet] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
                                                     sendOnChannel(name, createdOnInSeconds, notificationTime, id)
                                                 }
                                             }
