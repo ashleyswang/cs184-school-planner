@@ -20,14 +20,8 @@
     <fragment
         android:id="@+id/navigation_schedule"
         android:name="edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.userAuth.UserAuthFragment"
-        android:label="@string/title_schedule"
+        android:label="@string/title_signout"
         tools:layout="@layout/fragment_schedule" />
-
-    <fragment
-        android:id="@+id/navigation_deadlines"
-        android:name="edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.deadlines.DeadlinesFragment"
-        android:label="Deadlines"
-        tools:layout="@layout/fragment_deadlines" />
 
     <fragment
         android:id="@+id/navigation_courses"

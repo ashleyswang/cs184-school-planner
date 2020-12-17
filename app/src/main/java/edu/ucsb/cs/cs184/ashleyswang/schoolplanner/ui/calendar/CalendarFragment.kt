@@ -117,7 +117,7 @@ class CalendarFragment : Fragment() {
         //init recyclerview
         var calRecyclerView = root.findViewById<RecyclerView>(R.id.calRecyclerView)
         adapter = CalEventAdapter(eventList)
-        makeEventList()
+        //makeEventList()
         calRecyclerView.adapter = adapter
         calRecyclerView.layoutManager = LinearLayoutManager(requireContext().applicationContext)
         val dividerItemDecoration = DividerItemDecoration(
@@ -152,11 +152,9 @@ class CalendarFragment : Fragment() {
         val titleStr = "$day $monthName $dayOfMonth, $year"
         dateTitle.text = titleStr
 
-        makeEventList()
+        makeEventList(date)
         past = true
         nextUp = false
-
-        Log.d(TAG, "selectedDate: " + selectedDate)
     }
 
 //    init {
@@ -164,10 +162,8 @@ class CalendarFragment : Fragment() {
 //        makeCalEventAdapter()
 //    }
 
-    private fun makeEventList() {
-        Log.d(TAG, "hello")
+    private fun makeEventList(date: LocalDate) {
         if(eventList.size > 0) eventList.clear()
-        Log.d(TAG, "controller terms: "+controller.terms.toString())
         for(term in controller.terms){
             for(event in term.value.events){
                 var date = event.value.start.toString()
@@ -183,7 +179,11 @@ class CalendarFragment : Fragment() {
                     if(date == selectedDate) eventList.add(CalendarItem(event.value))
                 }
                 for(meeting in course.value.meet) {
-                    if (meeting.value.meetsOnDay(today.dayOfWeek)) {
+                    Log.d(TAG, "meetings: "+meeting)
+                    if (meeting.value.meetsOnDay(date.dayOfWeek)) {
+                        Log.d(TAG, "meeting start?: "+meeting.value.start.toString())
+                        Log.d(TAG, "hello there is a meeting")
+                        Log.d(TAG, "meeting date?: "+meeting.value)
                         var item = CalendarItem(meeting.value, today)
                         eventList.add(item)
                     }
@@ -272,7 +272,9 @@ class CalendarFragment : Fragment() {
                 viewHolder.eventStartTime.text = startTimeString
                 viewHolder.eventEndTime.text = endTimeString
 
+                //Log.d(TAG, "item.start: "+item.start.toString())
                 // HIGHLIGHT NEXT EVENT IN THE CURRENT DAY
+                /*
                 if(item.start.dayOfMonth == today.dayOfMonth
                     && item.start.monthValue == today.monthValue
                     && item.start.year == today.year) {
@@ -288,21 +290,21 @@ class CalendarFragment : Fragment() {
                                 nextUp = true
                                 viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
                             }
-                            else if (item.end != null) {
-                                if(item.end.hour > today.hour) {
-                                    past = false
-                                    nextUp = true
-                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
-                                }
-                                else if(item.end.hour === today.hour && today.hour < item.end.hour) {
-                                    past = false
-                                    nextUp = true
-                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
-                                }
-                            }
+//                            else if (item.end != null) {
+//                                if(item.end.hour > today.hour) {
+//                                    past = false
+//                                    nextUp = true
+//                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
+//                                }
+//                                else if(item.end.hour === today.hour && today.hour < item.end.hour) {
+//                                    past = false
+//                                    nextUp = true
+//                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
+//                                }
+//                            }
                         }
                     }
-                }
+                }*/
             } else
                 viewHolder.eventName.text = "No upcoming events"
         }
@@ -326,11 +328,11 @@ class CalendarFragment : Fragment() {
             end = event.end
         }
 
-        constructor(meeting: Meeting, today: LocalDateTime) {
+        constructor(meeting: Meeting, date: LocalDateTime) {
             scope = meeting.course
             name = meeting.name
-            start = LocalDateTime.of(today.toLocalDate(), meeting.start)
-            end = LocalDateTime.of(today.toLocalDate(), meeting.end)
+            start = LocalDateTime.of(date.toLocalDate(), meeting.start)
+            end = LocalDateTime.of(date.toLocalDate(), meeting.end)
         }
     }
 }
