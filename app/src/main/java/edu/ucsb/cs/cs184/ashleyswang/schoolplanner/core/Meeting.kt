@@ -115,6 +115,19 @@ class Meeting {
         }
     }
 
+    fun meetsOnDay(day: DayOfWeek): Boolean {
+        var dayOfWeek: Int
+        when (day) {
+            DayOfWeek.MONDAY -> dayOfWeek = 0
+            DayOfWeek.TUESDAY -> dayOfWeek = 1
+            DayOfWeek.WEDNESDAY -> dayOfWeek = 2
+            DayOfWeek.THURSDAY -> dayOfWeek = 3
+            DayOfWeek.FRIDAY -> dayOfWeek = 4
+            else -> dayOfWeek = -1
+        }
+        return (dayOfWeek > 0) && daysToRepeat[dayOfWeek]
+    }
+
     fun removeEvents(index: Int) {
         val dayOfWeek: DayOfWeek?
         when (index) {
