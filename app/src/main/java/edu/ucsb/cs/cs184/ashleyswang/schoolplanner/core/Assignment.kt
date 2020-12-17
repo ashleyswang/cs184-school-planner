@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import java.time.LocalDateTime
 
 class Assignment {
     val TAG: String = "Assignment"
@@ -20,6 +21,14 @@ class Assignment {
         get() { return event.name }
         set(value: String) {
             event.name = value
+            db.child("name").setValue(value)
+        }
+
+    var date: LocalDateTime
+        get() { return event.start }
+        set(value: LocalDateTime) {
+            event.start = value
+            db.child("date").setValue(value.toString())
         }
 
     var descript: String
@@ -44,9 +53,9 @@ class Assignment {
         this.course = course
         this.eventId = eventId
         this.db = course.db.child("assign").child(id)
-        this.name = "New Assignment"
         this.db.child("eventId").setValue(eventId)
         this.completed = _completed
+        this.name = "New Assignment"
         _addDbListener()
     }
 

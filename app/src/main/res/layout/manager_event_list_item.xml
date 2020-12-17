@@ -17,7 +17,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/course_item_name"
+            android:id="@+id/event_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="22sp"
@@ -33,8 +33,8 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/course_item_event_name"
-                android:layout_width="wrap_content"
+                android:id="@+id/event_date"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -42,11 +42,10 @@
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
-                android:id="@+id/course_item_event_date"
+                android:id="@+id/event_time"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:gravity="right"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
@@ -56,7 +55,6 @@
     </LinearLayout>
 
     <View
-        android:id="@+id/divider2"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?android:attr/listDivider" />

@@ -11,6 +11,7 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewFragment
 
 class ManagerViewModel : ViewModel() {
     lateinit var controller: Controller
@@ -27,11 +28,8 @@ class ManagerViewModel : ViewModel() {
     var activeTerm: MutableLiveData<Term> = MutableLiveData<Term>().apply {
         value = null
     }
+    var activeCourse: Course? = null
+
     var termsList: ArrayList<Term> = arrayListOf<Term>()
     var courseList: ArrayList<Course> = arrayListOf<Course>()
-    var eventsList: ArrayList<Event> = arrayListOf<Event>()
-
-    // Other UI States
-    var tabStateTerm: Term? = null
-    var inEventsView: Boolean = false
 }

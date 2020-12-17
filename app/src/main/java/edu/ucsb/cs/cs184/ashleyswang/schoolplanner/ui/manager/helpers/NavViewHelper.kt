@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.helpers
 
 import android.util.Log
 import android.view.Menu
@@ -14,6 +14,8 @@ import com.google.firebase.database.ktx.getValue
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerFragment
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerViewModel
 import kotlin.collections.ArrayList
 
 class NavViewHelper (

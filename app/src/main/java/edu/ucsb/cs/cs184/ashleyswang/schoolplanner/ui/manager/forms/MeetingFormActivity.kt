@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -11,9 +11,11 @@ import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalTime
 import kotlin.Exception
 
@@ -39,14 +41,21 @@ class MeetingFormActivity : AppCompatActivity() {
     private lateinit var endTimeEditText: EditText
     private lateinit var daySelectViews: ArrayList<CheckBox>
 
+    private lateinit var notifSwitch: SwitchMaterial
+    private lateinit var notifLayout: LinearLayout
+    private lateinit var notifValEditText: EditText
+    private lateinit var notifUnitSpinner: Spinner
+
     private var initMeetName: String = "New Class"
     private var initStartTime: String = ""
     private var initEndTime: String = ""
     private var initSelDays: BooleanArray = BooleanArray(5) { false }
+    private var initNotif: Boolean = false
+    private var initNotifDuration: Duration = Duration.ZERO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_form_course)
+        setContentView(R.layout.activity_form_meeting)
 
         val userId = intent.getStringExtra("userId")!!
         controller = Controller(userId)
@@ -62,13 +71,13 @@ class MeetingFormActivity : AppCompatActivity() {
     }
 
     private fun setFinishButtonListeners() {
-        val submitBtn: ImageButton = this.findViewById(R.id.course_form_submit)
+        val submitBtn: ImageButton = this.findViewById(R.id.meeting_form_submit)
         submitBtn.setOnClickListener {
             if (updateMeeting()) {
                 val resultIntent: Intent = Intent()
                 val action: Int = if (editExisting) ACTION_EDIT else ACTION_ADD
                 resultIntent.putExtra("action", action)
-                resultIntent.putExtra("courseId", courseId)
+                resultIntent.putExtra("meetId", meetId)
                 setResult(Activity.RESULT_OK, resultIntent)
                 finish()
             }
@@ -79,7 +88,7 @@ class MeetingFormActivity : AppCompatActivity() {
             }
         }
 
-        val cancelBtn: ImageButton = this.findViewById(R.id.course_form_cancel)
+        val cancelBtn: ImageButton = this.findViewById(R.id.meeting_form_cancel)
         cancelBtn.setOnClickListener {
             setResult(Activity.RESULT_CANCELED)
             finish()
@@ -136,6 +145,33 @@ class MeetingFormActivity : AppCompatActivity() {
             initSelDays = intent.getBooleanArrayExtra("meetRecur")!!
             for (i in 0 until 5)
                 daySelectViews[i].isChecked = initSelDays[i]
+
+            initNotif = intent.getStringExtra("meetNotif") != null
+            var notifVal: Int = 0
+            var notifUnit: Int = -1
+            if (initNotif) {
+                initNotifDuration = Duration.parse(intent.getStringExtra("meetNotif")!!)
+                notifVal = initNotifDuration.toMinutes().toInt()
+                notifUnit = 0
+                if (notifVal % 60 == 0) {
+                    notifVal /= 60
+                    notifUnit = 1
+                    if (notifVal % 24 == 0) {
+                        notifVal /= 24
+                        notifUnit = 2
+                        if (notifVal % 7 == 0) {
+                            notifVal /= 7
+                            notifUnit = 3
+                        }
+                    }
+                }
+            }
+            notifSwitch.isChecked = initNotif
+            if (initNotif) {
+                notifLayout.visibility = View.VISIBLE
+                notifValEditText.setText(notifVal.toString())
+                notifUnitSpinner.setSelection(notifUnit)
+            }
 
             makeDeleteButton()
         }
@@ -195,11 +231,27 @@ class MeetingFormActivity : AppCompatActivity() {
                     3 -> selDayInput.add(DayOfWeek.THURSDAY)
                     4 -> selDayInput.add(DayOfWeek.FRIDAY)
                 }
+
+        val notifInput = notifSwitch.isChecked
+        val notifValInput = notifValEditText.text.toString()
+        val notifUnitInput = notifUnitSpinner.selectedItemPosition
+        var notifDuration = Duration.ZERO
+
         try {
             // Get First Lecture Start Time
             val inputStartTime = parseTimeDisplayString(startInput)
             val inputEndTime = parseTimeDisplayString(endInput)
             if (nameInput == "" || selDayInput.isEmpty()) throw Exception()
+
+            if (notifInput) {
+                when (notifUnitInput) {
+                    -1 -> throw Exception()
+                    0  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    1  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
+                }
+            }
 
             val meeting = course.meet[meetId] ?: course.addMeet()
 
@@ -212,6 +264,12 @@ class MeetingFormActivity : AppCompatActivity() {
                     lectDaysArray[i] = daySelectViews[i].isChecked
                 meeting.daysToRepeat = lectDaysArray
             }
+
+            if (!notifInput && initNotif)
+                meeting.notifTime = null
+            else if (notifInput && notifDuration != initNotifDuration)
+                meeting.notifTime = notifDuration
+
             return true
         } catch (e: Exception) {
             return false
@@ -266,5 +324,10 @@ class MeetingFormActivity : AppCompatActivity() {
         val selectF: CheckBox = this.findViewById(R.id.meeting_day_fri)
         daySelectViews =
             arrayListOf<CheckBox>(selectM, selectT, selectW, selectR, selectF)
+
+        notifSwitch = this.findViewById(R.id.meeting_notif_switch)
+        notifLayout = this.findViewById(R.id.meeting_notif_layout)
+        notifValEditText = this.findViewById(R.id.meeting_notif_value)
+        notifUnitSpinner = this.findViewById(R.id.meeting_notif_unit)
     }
 }

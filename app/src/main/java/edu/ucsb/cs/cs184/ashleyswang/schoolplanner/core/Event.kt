@@ -8,6 +8,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class Event {
     val TAG: String = "Event"
@@ -31,7 +32,7 @@ class Event {
         get() { return _end }
         set(value: LocalDateTime?) {
             _end = value
-            if (_end != null) db.child("end").setValue(_end.toString())
+            if (_end != null) db.child("end").setValue(_end!!.toString())
             else db.child("end").setValue(_end)
         }
     var recurId: String?
@@ -40,11 +41,32 @@ class Event {
             _recurId = value
             db.child("recurId").setValue(_recurId)
         }
+    var isAssign: Boolean
+        get() { return _isAssign }
+        set(value) {
+            _isAssign = value
+            db.child("isAssign").setValue(_isAssign)
+        }
+    val createdOn: String //this is System.CurrentTimeMillis/1000 to be put into seconds
+        get() { return _createdOn }
+    var notifTime: Duration?
+        get() { return _notifTime }
+        set(value) {
+            _notifTime = value
+            if (_notifTime != null)
+                db.child("notifTime").setValue(_notifTime.toString())
+            else
+                db.child("notifTime").removeValue()
+        }
 
+    private val _format: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
     private var _name: String = "New Event"
     private var _start: LocalDateTime = LocalDateTime.now()
     private var _end: LocalDateTime? = null
     private var _recurId: String? = null
+    private var _isAssign: Boolean = false
+    private var _createdOn: String = LocalDateTime.now().format(_format)
+    private var _notifTime: Duration? = null
 
     /*
      * Constructor:
@@ -59,6 +81,8 @@ class Event {
         this.name = "New Event"
         this.start = LocalDateTime.now()
         this.end = null
+        this.isAssign = false
+        this.db.child("createdOn").setValue(_createdOn)
         _addDbListener()
     }
 
@@ -76,6 +100,12 @@ class Event {
             this._end = LocalDateTime.parse(value["end"] as String)
         if (value["recurId"] != null)
             this._recurId = value["recurId"] as String
+        if (value["isAssign"] != null)
+            this._isAssign = value["isAssign"] as Boolean
+        if (value["createdOn"] != null)
+            this._createdOn = value["createdOn"] as String
+        if (value["notifTime"] != null)
+            this._notifTime = Duration.parse(value["notifTime"] as String)
 
         _addDbListener()
     }
@@ -128,6 +158,39 @@ class Event {
                 val value = dataSnapshot.getValue<String?>()
                 if (value != null && value != _recurId)
                     _recurId = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("isAssign").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<Boolean?>()
+                if (value != null && value != _isAssign)
+                    _isAssign = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("createdOn").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _createdOn)
+                    _createdOn = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("notifTime").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _notifTime.toString())
+                    _notifTime = Duration.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

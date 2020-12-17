@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.manager.TermFormActivity">
+    tools:context=".ui.manager.forms.TermFormActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/term_form_header"
@@ -116,37 +116,6 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/term_name"
         app:layout_constraintTop_toBottomOf="@+id/term_end_label" />
-
-    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
-    <!--        android:id="@+id/term_form_datepicker_layout"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintStart_toStartOf="parent"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/term_start"-->
-    <!--        app:layout_constraintVertical_bias="0.2">-->
-
-    <!--        <DatePicker-->
-    <!--            android:id="@+id/term_form_datepicker"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:datePickerMode="calendar"-->
-    <!--            android:paddingBottom="15dp"-->
-    <!--            app:layout_constraintEnd_toEndOf="parent"-->
-    <!--            app:layout_constraintStart_toStartOf="parent"-->
-    <!--            app:layout_constraintTop_toTopOf="parent" />-->
-
-    <!--        <Button-->
-    <!--            android:id="@+id/term_form_datepicker_confirm"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:background="@drawable/custom_round_button"-->
-    <!--            android:text="Save"-->
-    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--            app:layout_constraintEnd_toEndOf="@+id/datePicker" />-->
-
-    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
     <Button
         android:id="@+id/term_form_delete"

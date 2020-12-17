@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -23,37 +24,44 @@ class Meeting {
         set(value: String) {
             _name = value
             db.child("name").setValue(_name)
-            updateEvents("name")
         }
     var start: LocalTime
         get() { return _start }
         set(value) {
             _start = value
             db.child("start").setValue(_start.toString())
-            updateEvents("start")
         }
     var end: LocalTime
         get() { return _end }
         set(value) {
             _end = value
             db.child("end").setValue(_end.toString())
-            updateEvents("end")
+        }
+    val createdOn: LocalDateTime
+        get() { return _createdOn }
+    var notifTime: Duration?
+        get() { return _notifTime }
+        set(value) {
+            _notifTime = value
+            if (_notifTime != null)
+                db.child("notifTime").setValue(_notifTime.toString())
+            else
+                db.child("notifTime").removeValue()
         }
 
     // [M, T, W, R, F]
     var daysToRepeat: BooleanArray
         get() { return _daysToRepeat }
         set(value) {
-            for (i in 0 until 5) {
+            for (i in 0 until 5)
                 db.child("days").child(i.toString()).setValue(value[i])
-                if (value[i] && !_daysToRepeat[i]) generateEvents(i)
-                else if (!value[i] && _daysToRepeat[i]) removeEvents(i)
-            }
         }
 
     private var _name: String = "New Meeting"
     private var _start: LocalTime = LocalTime.now()
     private var _end: LocalTime = LocalTime.now()
+    private var _createdOn: LocalDateTime = LocalDateTime.now()
+    private var _notifTime: Duration? = null
     private var _daysToRepeat: BooleanArray = BooleanArray(5) { false }
 
     constructor(course: Course) {
@@ -64,6 +72,7 @@ class Meeting {
         this.start = _start
         this.end = _end
         this.daysToRepeat = _daysToRepeat
+        db.child("createdOn").setValue(_createdOn.toString())
         _addDbListener()
     }
 
@@ -78,6 +87,10 @@ class Meeting {
             this._start = LocalTime.parse(value["start"] as String)
         if (value["end"] != null)
             this._end = LocalTime.parse(value["end"] as String)
+        if (value["createdOn"] != null)
+            this._createdOn = LocalDateTime.parse(value["createdOn"] as String)
+        if (value["notifTime"] != null)
+            this._notifTime = Duration.parse(value["notifTime"] as String)
 
         if (value["days"] != null) {
             val repeatDaysInfo = value["days"] as ArrayList<Boolean>
@@ -88,7 +101,7 @@ class Meeting {
         _addDbListener()
     }
 
-    private fun updateEvents(field: String) {
+    fun updateEvents(field: String) {
         val meetEvents
             = course.events.values.filter { it.recurId == this.id }
         for (event in meetEvents) {
@@ -100,6 +113,19 @@ class Meeting {
                     event.end = event.end!!.withHour(end.hour).withMinute(end.minute)
             }
         }
+    }
+
+    fun meetsOnDay(day: DayOfWeek): Boolean {
+        var dayOfWeek: Int
+        when (day) {
+            DayOfWeek.MONDAY -> dayOfWeek = 0
+            DayOfWeek.TUESDAY -> dayOfWeek = 1
+            DayOfWeek.WEDNESDAY -> dayOfWeek = 2
+            DayOfWeek.THURSDAY -> dayOfWeek = 3
+            DayOfWeek.FRIDAY -> dayOfWeek = 4
+            else -> dayOfWeek = -1
+        }
+        return (dayOfWeek > 0) && daysToRepeat[dayOfWeek]
     }
 
     fun removeEvents(index: Int) {
@@ -122,7 +148,7 @@ class Meeting {
         }
     }
 
-    private fun generateEvents(index: Int) {
+    fun generateEvents(index: Int) {
         val dayOfWeek: DayOfWeek
         when (index) {
             0 -> dayOfWeek = DayOfWeek.MONDAY
@@ -161,10 +187,8 @@ class Meeting {
         db.child("name").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != _name) {
+                if (value != null && value != _name)
                     _name = value
-                    updateEvents("name")
-                }
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
@@ -174,10 +198,8 @@ class Meeting {
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != _start.toString()) {
+                if (value != null && value != _start.toString())
                     _start = LocalTime.parse(value)
-                    updateEvents("start")
-                }
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start.", error.toException())
@@ -187,13 +209,33 @@ class Meeting {
         db.child("end").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
-                if (value != null && value != _end.toString()) {
+                if (value != null && value != _end.toString())
                     _end = LocalTime.parse(value)
-                    updateEvents("end")
-                }
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end.", error.toException())
+            }
+        })
+
+        db.child("createdOn").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _createdOn.toString())
+                    _createdOn = LocalDateTime.parse(value)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read creation date.", error.toException())
+            }
+        })
+
+        db.child("notifTime").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _notifTime.toString())
+                    _notifTime = Duration.parse(value)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
             }
         })
 

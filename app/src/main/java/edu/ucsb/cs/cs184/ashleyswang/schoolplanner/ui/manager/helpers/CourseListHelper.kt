@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.helpers
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +18,9 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Course
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerFragment
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerViewModel
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewFragment
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.*
@@ -90,11 +93,11 @@ class CourseListHelper(
         adapter = CoursesAdapter(courseList)
         courseView.adapter = adapter
         courseView.layoutManager = LinearLayoutManager(fragment.requireContext())
-        val dividerItemDecoration = DividerItemDecoration(
-            courseView.context,
-            (courseView.layoutManager as LinearLayoutManager).orientation
-        )
-        courseView.addItemDecoration(dividerItemDecoration)
+//        val divider = DividerItemDecoration(
+//            courseView.context,
+//            (courseView.layoutManager as LinearLayoutManager).orientation
+//        )
+//        courseView.addItemDecoration(divider)
     }
 
     private fun setDatabaseListeners() {
@@ -143,12 +146,31 @@ class CourseListHelper(
         return course.events.values.minBy { it.start }
     }
 
+    private fun getDateDisplayString(month: Int, day: Int): String {
+        val monthString =
+            if (month < 10) "0${month}"
+            else month.toString()
+        val dayString =
+            if (day < 10) "0${day}"
+            else day.toString()
+        return "$monthString/$dayString"
+    }
+
+    private fun getTimeDisplayString(hour: Int, minute: Int): String {
+        val hourDigit = if (hour < 13) hour else hour-12
+        val hourString = if (hourDigit == 0) "12" else hourDigit.toString()
+        val minString = if (minute < 10) "0$minute" else minute.toString()
+        val timeSuffix = if (hour < 12) "AM" else "PM"
+        return "$hourString:$minString $timeSuffix"
+    }
+
     inner class CoursesAdapter (private val courses: List<Course>)
         : RecyclerView.Adapter<CoursesAdapter.ViewHolder>()
     {
         inner class ViewHolder(itemView: View) :
             RecyclerView.ViewHolder(itemView), View.OnClickListener
         {
+            lateinit var course: Course
             val courseName: TextView = itemView.findViewById(R.id.course_item_name)
             val eventName: TextView = itemView.findViewById(R.id.course_item_event_name)
             val eventDate: TextView = itemView.findViewById(R.id.course_item_event_date)
@@ -158,38 +180,37 @@ class CourseListHelper(
             }
 
             override fun onClick(v: View?) {
-                Log.d(TAG, "temp on click")
+                fragment.makeCourseViewFragment(course)
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoursesAdapter.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val context = parent.context
             val inflater = LayoutInflater.from(context)
             val courseItem = inflater.inflate(R.layout.manager_course_list_item, parent, false)
             return ViewHolder(courseItem)
         }
 
-        override fun onBindViewHolder(viewHolder: CoursesAdapter.ViewHolder, position: Int) {
+        override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
             val course: Course = courses.get(position)
             val event: Event? = getCourseNextEvent(course)
 
             // Set Course Item Values
+            viewHolder.course = course
             viewHolder.courseName.text = course.name
             if (event != null) {
                 val nameString = "Upcoming: ${event.name}"
                 val dayOfWeek =
                     if (event.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
                     else event.start.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US)
-                val dayOfMonth =
-                    if (event.start.dayOfMonth < 10) "0${event.start.dayOfMonth}"
-                    else event.start.dayOfMonth.toString()
-                val month =
-                    if (event.start.monthValue < 10) "0${event.start.monthValue}"
-                    else event.start.monthValue.toString()
-                val dateString = "$dayOfWeek $month/$dayOfMonth"
+                val dateString =
+                    getDateDisplayString(event.start.monthValue, event.start.dayOfMonth)
+                val timeString =
+                    getTimeDisplayString(event.start.hour, event.start.minute)
+                val displayString = "$dayOfWeek $dateString  $timeString"
 
                 viewHolder.eventName.text = nameString
-                viewHolder.eventDate.text = dateString
+                viewHolder.eventDate.text = displayString
             } else
                 viewHolder.eventName.text = "No upcoming events or deadlines"
         }

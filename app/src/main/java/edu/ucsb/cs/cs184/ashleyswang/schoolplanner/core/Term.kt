@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class Term : Scope {
     val TAG: String = "Term"
@@ -24,13 +25,13 @@ class Term : Scope {
         get() { return _start }
         set(value: LocalDateTime) {
             _start = value
-            this.db.child("start").setValue(_start.toString())
+            this.db.child("start").setValue(_start.format(format))
         }
     var end: LocalDateTime
         get() { return _end }
         set(value: LocalDateTime) {
             _end = value
-            this.db.child("end").setValue(_end.toString())
+            this.db.child("end").setValue(_end.format(format))
         }
     val courses: MutableMap<String, Course>
         get() { return _courses }
@@ -39,6 +40,7 @@ class Term : Scope {
     val createdOn: LocalDateTime
         get() { return _createdOn }
 
+    private val format: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
     private var _name: String = "New Term"
     private var _start: LocalDateTime = LocalDateTime.now()
     private var _end: LocalDateTime = LocalDateTime.now()
@@ -53,7 +55,7 @@ class Term : Scope {
         this.name = "New Term"
         this.start = LocalDateTime.now()
         this.end = LocalDateTime.now()
-        this.db.child("createdOn").setValue(createdOn.toString())
+        this.db.child("createdOn").setValue(createdOn.format(format))
         _addDbListener()
     }
 
@@ -64,11 +66,11 @@ class Term : Scope {
 
         this._name = value["name"] as String
         if (value["start"] != null)
-            this._start = LocalDateTime.parse(value["start"]!! as String)
+            this._start = LocalDateTime.parse(value["start"]!! as String, format)
         if (value["end"] != null)
-            this._end = LocalDateTime.parse(value["end"]!! as String)
+            this._end = LocalDateTime.parse(value["end"]!! as String, format)
         if (value["createdOn"] != null)
-            this._createdOn = LocalDateTime.parse(value["createdOn"]!! as String)
+            this._createdOn = LocalDateTime.parse(value["createdOn"]!! as String, format)
 
         val courseInfo = value["courses"] as Map<String, Map<String, Any>>?
         if (courseInfo != null)
@@ -129,7 +131,7 @@ class Term : Scope {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
                 if (value != null && value != _start.toString())
-                    _start = LocalDateTime.parse(value)
+                    _start = LocalDateTime.parse(value, format)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -140,7 +142,7 @@ class Term : Scope {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
                 if (value != null && value != _end.toString())
-                    _end = LocalDateTime.parse(value)
+                    _end = LocalDateTime.parse(value, format)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())
@@ -151,7 +153,7 @@ class Term : Scope {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String>()
                 if (value != null && value != _createdOn.toString())
-                    _createdOn = LocalDateTime.parse(value)
+                    _createdOn = LocalDateTime.parse(value, format)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read end date.", error.toException())

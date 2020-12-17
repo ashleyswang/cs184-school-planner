@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.helpers
 
 import android.util.Log
 import android.view.View
@@ -9,6 +9,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Term
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerFragment
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.ManagerViewModel
 
 class DefaultLayoutHelper(
     private val fragment: ManagerFragment,
@@ -49,10 +51,12 @@ class DefaultLayoutHelper(
         defaultLayout.visibility = View.VISIBLE
 
         toolbar.title = ""
-        var item = toolbar.menu.findItem(R.id.terms_toolbar_mark_fav)
-        item.isVisible = false
-        item = toolbar.menu.findItem(R.id.terms_toolbar_edit_term)
-        item.isVisible = false
+        try {
+            var item = toolbar.menu.findItem(R.id.terms_toolbar_mark_fav)
+            item.isVisible = false
+            item = toolbar.menu.findItem(R.id.terms_toolbar_edit_term)
+            item.isVisible = false
+        } catch (e: Exception) { }
     }
 
     private fun hideDefaultView() {

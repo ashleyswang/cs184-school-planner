@@ -24,7 +24,17 @@
     <string name="courses_default_btnText">  Add Term</string>
     <string name="course_item_upcoming_label">Upcoming:</string>
     <string name="set_as_current_term">Set As Current Term</string>
+    <string name="title_activity_meeting_form">MeetingFormActivity</string>
+    <string name="title_activity_assign_form">AssignmentFormActivity</string>
+    <string name="title_activity_event_form">EventFormActivity</string>
 
+    <string-array name="notif_options">
+        <item>Select</item>
+        <item>Minutes</item>
+        <item>Hours</item>
+        <item>Days</item>
+        <item>Weeks</item>
+    </string-array>
 
     <!-- CALENDAR FRAGMENT -->
     <string name="select_date">Select a Date</string>
