@@ -46,11 +46,11 @@ class MainActivity : AppCompatActivity() {
         createNotificationChannel()
         var isGoogleSignIn = intent.getBooleanExtra("isGoogleSignIn", false)
         var user: String? =  intent.getStringExtra("user")
-        Log.d(MainActivity::class.qualifiedName, "user: " + user)
         if (isGoogleSignIn) {
             acct = GoogleSignIn.getLastSignedInAccount(this)!!
             if (acct != null) {
                 controller = Controller(acct!!.id.toString())
+                user = acct!!.id.toString()
             }
         }
         else {
@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 controller = Controller("NoUser")
             }
         }
+        Log.d(MainActivity::class.qualifiedName, "user: " + user)
         val navView: BottomNavigationView = findViewById(R.id.navigation)
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                                                             Log.d("notifTime", "notifTime is null")
                                                             continue
                                                         }
-                                                        val endTime: String? = event.child("end").getValue<String>()
+                                                        val endTime: String? = event.child("start").getValue<String>()
                                                         if (endTime == null) {
                                                             Log.d("end", "end time is null; this shouldn't occur")
                                                             continue
@@ -122,9 +123,9 @@ class MainActivity : AppCompatActivity() {
                                                             Log.d("name", "name is null")
                                                             continue
                                                         }
-                                                        var id: String? = event.child("id").getValue<String>()
+                                                        var id: String? = event.key.toString()//event.child("id").getValue<String>()
                                                         if (id == null) {
-                                                            Log.d("id", "id is null")
+                                                            Log.d("id", "id is nullff")
                                                             continue
                                                         }
                                                         Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
