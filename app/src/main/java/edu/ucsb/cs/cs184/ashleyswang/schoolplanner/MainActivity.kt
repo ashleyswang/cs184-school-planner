@@ -112,6 +112,10 @@ class MainActivity : AppCompatActivity() {
                                                             continue
                                                         }
                                                         val notificationTime: Long = LocalDateTime.parse(endTime).minus(Duration.parse(notifTime)).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()
+                                                        if (notificationTime < System.currentTimeMillis()) {
+                                                            Log.d("notificationTime", "notificationTime has passed, will not be creating a notification")
+                                                            continue
+                                                        }
                                                         val createdOn: String? = event.child("createdOn").getValue<String>()
                                                         if (createdOn == null) {
                                                             Log.d("timestamp", "timestamp is null")
@@ -125,7 +129,7 @@ class MainActivity : AppCompatActivity() {
                                                         }
                                                         var id: String? = event.key.toString()//event.child("id").getValue<String>()
                                                         if (id == null) {
-                                                            Log.d("id", "id is nullff")
+                                                            Log.d("id", "id is null")
                                                             continue
                                                         }
                                                         Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
@@ -202,7 +206,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sendOnChannel(name: String, timestampInSeconds: Int, notificationTime: Long, id: String) {
-        Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
+        //Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
 
         var notification = NotificationCompat.Builder(this, AppNotificationChannel.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_baseline_calendar_today_24)
