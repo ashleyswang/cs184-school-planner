@@ -3,12 +3,14 @@
     package="edu.ucsb.cs.cs184.ashleyswang.schoolplanner">
 
     <application
+        android:name=".other.notifications.AppNotificationChannel"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity" />
         <activity
             android:name=".ui.deadlines.DeadlineFormActivity"
             android:label="@string/title_activity_deadline_form" />
@@ -27,13 +29,15 @@
         <activity
             android:name=".ui.manager.forms.EventFormActivity"
             android:label="@string/title_activity_event_form" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".LoginPage" android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".other.notifications.NotificationsBroadcastReceiver" />
     </application>
 
 </manifest>
