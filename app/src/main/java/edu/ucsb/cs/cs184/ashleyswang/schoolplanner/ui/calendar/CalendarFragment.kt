@@ -20,6 +20,7 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.MainActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Event
+import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Meeting
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
@@ -35,10 +36,11 @@ class CalendarFragment : Fragment() {
 
     private lateinit var model: CalendarViewModel
     private lateinit var controller: Controller
-    private lateinit var eventList: ArrayList<Event>
+    private lateinit var eventList: ArrayList<CalendarItem>
     private lateinit var adapter: CalEventAdapter
     private lateinit var selectedDate: String
     private lateinit var dateTitle: TextView
+    private var today: LocalDateTime = LocalDateTime.now()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,7 +60,6 @@ class CalendarFragment : Fragment() {
             val visible = calendarView.visibility
             if (visible == View.VISIBLE) {
                 calendarView.visibility = View.GONE
-                //divider.visibility = View.INVISIBLE
 
                 val constraintSet = ConstraintSet()
                 constraintSet.clone(calendarConstraint)
@@ -80,7 +81,6 @@ class CalendarFragment : Fragment() {
             }
             else {
                 calendarView.visibility = View.VISIBLE
-                //divider.visibility = View.VISIBLE
 
                 val constraintSet = ConstraintSet()
                 constraintSet.clone(calendarConstraint)
@@ -107,7 +107,7 @@ class CalendarFragment : Fragment() {
         }
 
         controller = (activity as MainActivity).controller
-        eventList = arrayListOf<Event>()
+        eventList = arrayListOf<CalendarItem>()
         val sdf = SimpleDateFormat("MM/dd/yyyy") // format date
         selectedDate = sdf.format(Date(calendarView.date))
 
@@ -168,17 +168,24 @@ class CalendarFragment : Fragment() {
                 var date = event.value.start.toString()
                 date = date.dropLast(6)
                 //Log.d(TAG, "$date vs $selectedDate")
-                if(date == selectedDate) eventList.add(event.value)
+                if(date == selectedDate) eventList.add(CalendarItem(event.value))
             }
             for(course in term.value.courses){
                 for(event in course.value.events){
                     var date = event.value.start.toString()
                     date = date.dropLast(6)
                     //Log.d(TAG, "$date vs $selectedDate")
-                    if(date == selectedDate) eventList.add(event.value)
+                    if(date == selectedDate) eventList.add(CalendarItem(event.value))
+                }
+                for(meeting in course.value.meet) {
+                    if (meeting.value.meetsOnDay(today.dayOfWeek)) {
+                        var item = CalendarItem(meeting.value, today)
+                        eventList.add(item)
+                    }
                 }
             }
         }
+
         eventList.sortBy { it.start }
         adapter.notifyDataSetChanged()
 
@@ -196,7 +203,7 @@ class CalendarFragment : Fragment() {
 //        calRecyclerView.addItemDecoration(dividerItemDecoration)
 //    }
 
-    inner class CalEventAdapter(private val events: List<Event>)
+    inner class CalEventAdapter(private val calendarItems: List<CalendarItem>)
         : RecyclerView.Adapter<CalEventAdapter.ViewHolder>()
     {
         inner class ViewHolder(itemView: View) :
@@ -224,8 +231,8 @@ class CalendarFragment : Fragment() {
         }
 
         override fun onBindViewHolder(viewHolder: CalEventAdapter.ViewHolder, position: Int) {
-            val event: Event = events.get(position)
-            val scope: Scope = event.scope
+            val item: CalendarItem = calendarItems.get(position)
+            val scope: Scope = item.scope
 
             var nextUp: Boolean = false
             var past: Boolean = true
@@ -234,23 +241,23 @@ class CalendarFragment : Fragment() {
                 LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId())
 
             // Set Course Item Values
-            viewHolder.eventName.text = event.name
+            viewHolder.eventName.text = item.name
             viewHolder.eventCourseName.text = scope.name
-            if (event != null) {
+            if (item != null) {
                 val dayOfWeek =
-                    if (event.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
-                    else event.start.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US)
+                    if (item.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
+                    else item.start.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US)
                 val dayOfMonth =
-                    if (event.start.dayOfMonth < 10) "0${event.start.dayOfMonth}"
-                    else event.start.dayOfMonth.toString()
+                    if (item.start.dayOfMonth < 10) "0${item.start.dayOfMonth}"
+                    else item.start.dayOfMonth.toString()
                 val month =
-                    if (event.start.monthValue < 10) "0${event.start.monthValue}"
-                    else event.start.monthValue.toString()
+                    if (item.start.monthValue < 10) "0${item.start.monthValue}"
+                    else item.start.monthValue.toString()
                 val dateString = "$dayOfWeek $month/$dayOfMonth"
-                val year = event.start.year
+                val year = item.start.year
 
-                var hour = event.start.hour
-                val minute = event.start.minute
+                var hour = item.start.hour
+                val minute = item.start.minute
                 var xm = "" // AM/PM
 
                 // single digit minute --> 0x double digit
@@ -276,24 +283,24 @@ class CalendarFragment : Fragment() {
                 viewHolder.eventStartTime.text = timeString
 
                 // HIGHLIGHT NEXT EVENT IN THE CURRENT DAY
-                if(event.start.dayOfMonth == localDateTimeToday.dayOfMonth
-                    && event.start.monthValue == localDateTimeToday.monthValue
+                if(item.start.dayOfMonth == localDateTimeToday.dayOfMonth
+                    && item.start.monthValue == localDateTimeToday.monthValue
                     && year == localDateTimeToday.year) {
-                    Log.d(TAG, "event is today")
+                    Log.d(TAG, "item is today")
                     if (past) {
                         Log.d(TAG, "still in the past")
                         Log.d(TAG, "current hour: "+localDateTimeToday.hour)
-                        Log.d(TAG, "event hour: "+hour)
-                        if(localDateTimeToday.hour < event.start.hour) {
-                            Log.d(TAG, "next event: "+ event.start.toString())
+                        Log.d(TAG, "item hour: "+hour)
+                        if(localDateTimeToday.hour < item.start.hour) {
+                            Log.d(TAG, "next item: "+ item.start.toString())
                             past = false
                             nextUp = true
                             viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
                             viewHolder.eventStartTime.setBackgroundResource(R.color.highlight)
                         }
-                        else if (localDateTimeToday.hour == event.start.hour) {
-                            if(localDateTimeToday.minute < event.start.minute) {
-                                Log.d(TAG, "next event: "+ event.start.toString())
+                        else if (localDateTimeToday.hour == item.start.hour) {
+                            if(localDateTimeToday.minute < item.start.minute) {
+                                Log.d(TAG, "next item: "+ item.start.toString())
                                 past = false
                                 nextUp = true
                                 viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
@@ -308,7 +315,25 @@ class CalendarFragment : Fragment() {
 
         // Returns the total count of items in the list
         override fun getItemCount(): Int {
-            return events.size
+            return calendarItems.size
+        }
+    }
+
+    inner class CalendarItem {
+        val scope: Scope
+        val name: String
+        val start: LocalDateTime
+
+        constructor(event: Event) {
+            scope = event.scope
+            name = event.name
+            start = event.start
+        }
+
+        constructor(meeting: Meeting, today: LocalDateTime) {
+            scope = meeting.course
+            name = meeting.name
+            start = LocalDateTime.of(today.toLocalDate(), meeting.start)
         }
     }
 }
