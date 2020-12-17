@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CalendarView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -41,6 +42,8 @@ class CalendarFragment : Fragment() {
     private lateinit var selectedDate: String
     private lateinit var dateTitle: TextView
     private var today: LocalDateTime = LocalDateTime.now()
+    private var nextUp: Boolean = false
+    private var past: Boolean = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -150,6 +153,8 @@ class CalendarFragment : Fragment() {
         dateTitle.text = titleStr
 
         makeEventList()
+        past = true
+        nextUp = false
 
         Log.d(TAG, "selectedDate: " + selectedDate)
     }
@@ -192,16 +197,35 @@ class CalendarFragment : Fragment() {
         Log.d(TAG, eventList.toString())
     }
 
-//    private fun makeCalEventAdapter() {
-//        adapter = CalEventAdapter(eventList)
-//        calRecyclerView.adapter = adapter
-//        calRecyclerView.layoutManager = LinearLayoutManager(requireContext().applicationContext)
-//        val dividerItemDecoration = DividerItemDecoration(
-//            calRecyclerView.context,
-//            (calRecyclerView.layoutManager as LinearLayoutManager).orientation
-//        )
-//        calRecyclerView.addItemDecoration(dividerItemDecoration)
-//    }
+    private fun makeTimeString(dateTime: LocalDateTime): String {
+        // get time attributes
+        var hour = dateTime.hour
+        val minute = dateTime.minute
+        var xm = "" // AM/PM
+
+        // single digit minute --> 0x double digit
+        val minuteStr =
+            if(minute.toString().length == 1) "0" + minute.toString()
+            else minute.toString()
+
+        // fix hour to be conventional
+        if (hour == 0) {
+            hour = 12
+            xm = "AM"
+        }
+        else if (hour < 12) {
+            xm = "AM"
+        }
+        else if (hour == 12) {
+            xm = "PM"
+        }
+        else {
+            hour -= 12
+            xm = "PM"
+        }
+
+        return "$hour:"+minuteStr+" "+xm
+    }
 
     inner class CalEventAdapter(private val calendarItems: List<CalendarItem>)
         : RecyclerView.Adapter<CalEventAdapter.ViewHolder>()
@@ -209,9 +233,10 @@ class CalendarFragment : Fragment() {
         inner class ViewHolder(itemView: View) :
             RecyclerView.ViewHolder(itemView), View.OnClickListener
         {
+            val eventItemWrapper: LinearLayout = itemView.findViewById(R.id.event_item_wrapper)
             val eventName: TextView = itemView.findViewById(R.id.event_item_name)
-            var eventScope: TextView = itemView.findViewById(R.id.event_item_scope)
             val eventStartTime: TextView = itemView.findViewById(R.id.event_item_start_time)
+            var eventEndTime: TextView = itemView.findViewById(R.id.event_item_end_time)
             val eventCourseName: TextView = itemView.findViewById(R.id.event_course_name)
 
             init {
@@ -234,77 +259,46 @@ class CalendarFragment : Fragment() {
             val item: CalendarItem = calendarItems.get(position)
             val scope: Scope = item.scope
 
-            var nextUp: Boolean = false
-            var past: Boolean = true
-            val today = Calendar.getInstance()
-            val localDateTimeToday: LocalDateTime =
-                LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId())
-
             // Set Course Item Values
             viewHolder.eventName.text = item.name
             viewHolder.eventCourseName.text = scope.name
             if (item != null) {
-                val dayOfWeek =
-                    if (item.start.dayOfWeek == DayOfWeek.THURSDAY) "R"
-                    else item.start.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US)
-                val dayOfMonth =
-                    if (item.start.dayOfMonth < 10) "0${item.start.dayOfMonth}"
-                    else item.start.dayOfMonth.toString()
-                val month =
-                    if (item.start.monthValue < 10) "0${item.start.monthValue}"
-                    else item.start.monthValue.toString()
-                val dateString = "$dayOfWeek $month/$dayOfMonth"
-                val year = item.start.year
-
-                var hour = item.start.hour
-                val minute = item.start.minute
-                var xm = "" // AM/PM
-
-                // single digit minute --> 0x double digit
-                val minuteStr =
-                    if(minute.toString().length == 1) "0" + minute.toString()
-                    else minute.toString()
-
-                // fix hour to be conventional
-                if (hour == 0) {
-                    hour = 12
-                    xm = "AM"
+                // get start and end time strings for calendar list items
+                val startTimeString = makeTimeString(item.start)
+                var endTimeString = ""
+                if (item.end != null) {
+                    endTimeString = makeTimeString(item.end)
                 }
-                else if (hour < 13) {
-                    xm = "AM"
-                }
-                else {
-                    hour -= 12
-                    xm = "PM"
-                }
-
-                val timeString = "$hour:"+minuteStr+" "+xm
-                viewHolder.eventScope.text = dateString
-                viewHolder.eventStartTime.text = timeString
+                viewHolder.eventStartTime.text = startTimeString
+                viewHolder.eventEndTime.text = endTimeString
 
                 // HIGHLIGHT NEXT EVENT IN THE CURRENT DAY
-                if(item.start.dayOfMonth == localDateTimeToday.dayOfMonth
-                    && item.start.monthValue == localDateTimeToday.monthValue
-                    && year == localDateTimeToday.year) {
-                    Log.d(TAG, "item is today")
+                if(item.start.dayOfMonth == today.dayOfMonth
+                    && item.start.monthValue == today.monthValue
+                    && item.start.year == today.year) {
                     if (past) {
-                        Log.d(TAG, "still in the past")
-                        Log.d(TAG, "current hour: "+localDateTimeToday.hour)
-                        Log.d(TAG, "item hour: "+hour)
-                        if(localDateTimeToday.hour < item.start.hour) {
-                            Log.d(TAG, "next item: "+ item.start.toString())
+                        if(today.hour < item.start.hour) {
                             past = false
                             nextUp = true
-                            viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
-                            viewHolder.eventStartTime.setBackgroundResource(R.color.highlight)
+                            viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
                         }
-                        else if (localDateTimeToday.hour == item.start.hour) {
-                            if(localDateTimeToday.minute < item.start.minute) {
-                                Log.d(TAG, "next item: "+ item.start.toString())
+                        else if (today.hour == item.start.hour) {
+                            if(today.minute < item.start.minute) {
                                 past = false
                                 nextUp = true
-                                viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
-                                viewHolder.eventStartTime.setBackgroundResource(R.color.highlight)
+                                viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
+                            }
+                            else if (item.end != null) {
+                                if(item.end.hour > today.hour) {
+                                    past = false
+                                    nextUp = true
+                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
+                                }
+                                else if(item.end.hour === today.hour && today.hour < item.end.hour) {
+                                    past = false
+                                    nextUp = true
+                                    viewHolder.eventItemWrapper.setBackgroundResource(R.color.nextEventHighlight)
+                                }
                             }
                         }
                     }
@@ -323,17 +317,20 @@ class CalendarFragment : Fragment() {
         val scope: Scope
         val name: String
         val start: LocalDateTime
+        val end: LocalDateTime?
 
         constructor(event: Event) {
             scope = event.scope
             name = event.name
             start = event.start
+            end = event.end
         }
 
         constructor(meeting: Meeting, today: LocalDateTime) {
             scope = meeting.course
             name = meeting.name
             start = LocalDateTime.of(today.toLocalDate(), meeting.start)
+            end = LocalDateTime.of(today.toLocalDate(), meeting.end)
         }
     }
 }
