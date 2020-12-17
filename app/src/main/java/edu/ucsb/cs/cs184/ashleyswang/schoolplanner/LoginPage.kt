@@ -112,7 +112,7 @@ class LoginPage : AppCompatActivity() {
             //val fileOutputStream: FileOutputStream = FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath().toString() + "/TestFile.txt")
             fileOutputStream.write(textToSave.toByteArray())
             fileOutputStream.close()
-            Toast.makeText(this, "Wrote to file: " + textToSave, Toast.LENGTH_LONG).show()
+            //Toast.makeText(this, "Wrote to file: " + textToSave, Toast.LENGTH_LONG).show()
             return textToSave
         }
         catch (e: FileNotFoundException) {
