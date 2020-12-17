@@ -100,7 +100,7 @@ class Event {
         if (value["isAssign"] != null)
             this._isAssign = value["isAssign"] as Boolean
         if (value["createdOn"] != null)
-            this._createdOn = value["timestamp"] as String
+            this._createdOn = value["createdOn"] as String
         if (value["notifTime"] != null)
             this._notifTime = Duration.parse(value["notifTime"] as String)
 
