@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                                                             Log.d("name", "name is null")
                                                             continue
                                                         }
-                                                        var id: String? = event.key.toString()//event.child("id").getValue<String>()
+                                                        var id: String = event.key.toString()
                                                         if (id == null) {
                                                             Log.d("id", "id is null")
                                                             continue
@@ -149,6 +149,47 @@ class MainActivity : AppCompatActivity() {
                                         else {
                                             Log.d("course", "course.events does not exist")
                                             continue
+                                        }
+
+                                        if (course.hasChild("meet")) {
+                                            val meets = course.child("meet")
+                                            if (meets.hasChildren()) {
+                                                for (meet in meets.children) {
+                                                    var name: String? = meet.child("name").getValue<String>()
+                                                    if (name == null) {
+                                                        Log.d("[meet] name", "name is null")
+                                                        continue
+                                                    }
+                                                    val createdOn: String? = meet.child("createdOn").getValue<String>()
+                                                    if (createdOn == null) {
+                                                        Log.d("[meet] createdOn", "createdOn is null")
+                                                        continue
+                                                    }
+                                                    val createdOnInSeconds: Int = (LocalDateTime.parse(createdOn).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()/1000).toInt()
+                                                    val days: Map<String, Boolean>? = meet.getValue<Map<String, Boolean>>()
+                                                    val notifyToday = willNotifyToday(days)
+                                                    if (notifyToday == false) {
+                                                        Log.d("[meet] notifyToday", "[meet] won't be notifying today")
+                                                        continue
+                                                    }
+                                                    val start: String? = meet.child("start").getValue<String>()
+                                                    if (start == null) {
+                                                        Log.d("[meet] start", "[meet] start is null")
+                                                        continue
+                                                    }
+                                                    val notificationTime = calculateMeetingNotificationTime(start)
+                                                    if (notificationTime < System.currentTimeMillis()) {
+                                                        Log.d("[meet] notifyTime", "notifyTime is past current Time, won't be sending notification")
+                                                        continue
+                                                    }
+                                                    val id: String = meet.key.toString()
+                                                    if (id == null) {
+                                                        Log.d("[meet] id", "id is null")
+                                                    }
+                                                    Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
+                                                    sendOnChannel(name, createdOnInSeconds, notificationTime, id)
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -205,7 +246,7 @@ class MainActivity : AppCompatActivity() {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId()).format(format)
     }
 
-    fun sendOnChannel(name: String, timestampInSeconds: Int, notificationTime: Long, id: String) {
+    fun sendOnChannel(name: String, createdOnInSeconds: Int, notificationTime: Long, id: String) {
         //Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
 
         var notification = NotificationCompat.Builder(this, AppNotificationChannel.CHANNEL_ID)
@@ -221,7 +262,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, NotificationsBroadcastReceiver::class.java)
         intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, id)
         intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_MESSAGE, notification)
-        val pendingIntent = PendingIntent.getBroadcast(this, timestampInSeconds, intent, PendingIntent.FLAG_CANCEL_CURRENT)
+        val pendingIntent = PendingIntent.getBroadcast(this, createdOnInSeconds, intent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
@@ -242,6 +283,36 @@ class MainActivity : AppCompatActivity() {
             manager.createNotificationChannel(channel)
         }
         Log.d("MainActivity", "createdNotificationChannel in Main")
+    }
+
+    fun willNotifyToday(notifyDates: Map<String, Boolean>?): Boolean? {
+        var dateToday: String = LocalDateTime.now().dayOfWeek.toString()
+        return when (dateToday) {
+            "MONDAY" -> {
+                notifyDates?.get("0")
+            }
+            "TUESDAY" -> {
+                notifyDates?.get("1")
+            }
+            "WEDNESDAY" -> {
+                notifyDates?.get("2")
+            }
+            "THURSDAY" -> {
+                notifyDates?.get("3")
+            }
+            "FRIDAY" -> {
+                notifyDates?.get("4")
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
+    fun calculateMeetingNotificationTime(notifyTime: String): Long {
+        var simpleFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        var completeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        return LocalDateTime.parse(LocalDateTime.now().format(simpleFormat) + " " + notifyTime, completeFormat).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()
     }
 
 }
