@@ -11,9 +11,5 @@
     <item
         android:id="@+id/navigation_schedule"
         android:icon="@drawable/ic_schedule_24px"
-        android:title="Schedule" />
-    <item
-        android:id="@+id/navigation_deadlines"
-        android:icon="@drawable/ic_format_list_bulleted_24px"
-        android:title="Deadlines" />
+        android:title="Sign Out" />
 </menu>

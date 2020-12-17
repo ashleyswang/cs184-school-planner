@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_calendar, R.id.navigation_manager, R.id.navigation_schedule, R.id.navigation_deadlines
+                R.id.navigation_calendar, R.id.navigation_manager, R.id.navigation_schedule
             )
         )
         termsPointer = controller.db.child("terms")
