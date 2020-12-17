@@ -8,4 +8,5 @@
     <color name="medGrey">#B9B9B9</color>
     <color name="darkGrey">#595959</color>
     <color name="warning">#FF4A4A</color>
+    <color name="highlight">#FFFF00</color>
 </resources>

@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.MainActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
@@ -38,7 +39,7 @@ class CalendarFragment : Fragment() {
     private lateinit var adapter: CalEventAdapter
     private lateinit var selectedDate: String
     private lateinit var dateTitle: TextView
-    private lateinit var showCalendar: Button
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,11 +50,11 @@ class CalendarFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_calendar, container, false)
         var calendarView: CalendarView = root.findViewById(R.id.calendarView)
         var calendarConstraint: ConstraintLayout = root.findViewById(R.id.calendar_layout)
-        //var divider: View = root.findViewById(R.id.divider2)
+        var calendarFab: FloatingActionButton = root.findViewById(R.id.cal_showing)
+        calendarFab.setImageResource(R.drawable.ic_calendar_24px)
 
         dateTitle = root.findViewById(R.id.selected_day)
-        showCalendar = root.findViewById(R.id.showCal)
-        showCalendar.setOnClickListener() {
+        calendarFab.setOnClickListener() {
             val visible = calendarView.visibility
             if (visible == View.VISIBLE) {
                 calendarView.visibility = View.GONE
@@ -122,15 +123,12 @@ class CalendarFragment : Fragment() {
         )
         calRecyclerView.addItemDecoration(dividerItemDecoration)
 
-
-        val date = Calendar.getInstance()
-        val today = sdf.format(date.time) // today
-        val m = today.substring(0, 2).toInt() - 1
-        val d = today.substring(3, 5).toInt()
-        val y = today.substring(6).toInt()
-        Log.d(TAG, "month: " + m + ", day: " + d + ", year: " + y)
+//        val date = Calendar.getInstance()
+//        val today = sdf.format(date.time) // today
+//        val m = today.substring(0, 2).toInt() - 1
+//        val d = today.substring(3, 5).toInt()
+//        val y = today.substring(6).toInt()
         //getSelectedDate(y, m, d) // load events from today on init
-        Log.d(TAG, "current day: " + today)
 
         return root
     }
@@ -156,14 +154,15 @@ class CalendarFragment : Fragment() {
         Log.d(TAG, "selectedDate: " + selectedDate)
     }
 
-    //init {
-        //makeEventList()
-        //makeCalEventAdapter()
-    //}
+//    init {
+//        makeEventList()
+//        makeCalEventAdapter()
+//    }
 
     private fun makeEventList() {
         Log.d(TAG, "hello")
         if(eventList.size > 0) eventList.clear()
+        Log.d(TAG, "controller terms: "+controller.terms.toString())
         for(term in controller.terms){
             for(event in term.value.events){
                 var date = event.value.start.toString()
@@ -228,6 +227,12 @@ class CalendarFragment : Fragment() {
             val event: Event = events.get(position)
             val scope: Scope = event.scope
 
+            var nextUp: Boolean = false
+            var past: Boolean = true
+            val today = Calendar.getInstance()
+            val localDateTimeToday: LocalDateTime =
+                LocalDateTime.ofInstant(today.toInstant(), today.getTimeZone().toZoneId())
+
             // Set Course Item Values
             viewHolder.eventName.text = event.name
             viewHolder.eventCourseName.text = scope.name
@@ -242,7 +247,7 @@ class CalendarFragment : Fragment() {
                     if (event.start.monthValue < 10) "0${event.start.monthValue}"
                     else event.start.monthValue.toString()
                 val dateString = "$dayOfWeek $month/$dayOfMonth"
-                val year = event.start.year.toString()
+                val year = event.start.year
 
                 var hour = event.start.hour
                 val minute = event.start.minute
@@ -269,6 +274,34 @@ class CalendarFragment : Fragment() {
                 val timeString = "$hour:"+minuteStr+" "+xm
                 viewHolder.eventScope.text = dateString
                 viewHolder.eventStartTime.text = timeString
+
+                // HIGHLIGHT NEXT EVENT IN THE CURRENT DAY
+                if(event.start.dayOfMonth == localDateTimeToday.dayOfMonth
+                    && event.start.monthValue == localDateTimeToday.monthValue
+                    && year == localDateTimeToday.year) {
+                    Log.d(TAG, "event is today")
+                    if (past) {
+                        Log.d(TAG, "still in the past")
+                        Log.d(TAG, "current hour: "+localDateTimeToday.hour)
+                        Log.d(TAG, "event hour: "+hour)
+                        if(localDateTimeToday.hour < event.start.hour) {
+                            Log.d(TAG, "next event: "+ event.start.toString())
+                            past = false
+                            nextUp = true
+                            viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
+                            viewHolder.eventStartTime.setBackgroundResource(R.color.highlight)
+                        }
+                        else if (localDateTimeToday.hour == event.start.hour) {
+                            if(localDateTimeToday.minute < event.start.minute) {
+                                Log.d(TAG, "next event: "+ event.start.toString())
+                                past = false
+                                nextUp = true
+                                viewHolder.eventCourseName.setBackgroundResource(R.color.highlight)
+                                viewHolder.eventStartTime.setBackgroundResource(R.color.highlight)
+                            }
+                        }
+                    }
+                }
             } else
                 viewHolder.eventName.text = "No upcoming events"
         }
