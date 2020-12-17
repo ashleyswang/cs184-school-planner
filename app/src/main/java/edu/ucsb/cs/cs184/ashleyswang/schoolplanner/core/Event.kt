@@ -53,7 +53,7 @@ class Event {
         get() { return _notifTime }
         set(value) {
             _notifTime = value
-            db.child("notifTime").setValue(_notifTime)
+            db.child("notifTime").setValue(_notifTime.toString())
         }
 
     private val _format: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")

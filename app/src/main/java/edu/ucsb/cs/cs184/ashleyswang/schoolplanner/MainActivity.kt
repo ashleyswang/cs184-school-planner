@@ -25,6 +25,7 @@ import com.google.firebase.database.ktx.getValue
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.AppNotificationChannel
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.NotificationsBroadcastReceiver
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -98,30 +99,27 @@ class MainActivity : AppCompatActivity() {
                                             val events = course.child("events")
                                             if (events.hasChildren()) {
                                                 for (event in events.children) {
-                                                    if (event.hasChild("notifications")) {
-                                                        val notifications = event.child("notifications")
-                                                        var timestamp: String? = event.child("timestamp").getValue<String>()
-                                                        if (timestamp == null) {
+                                                    if (event.hasChild("notifTime")) {
+                                                        val notifTime: String? = event.child("notifTime").getValue<String>()
+                                                        if (notifTime == null) {
+                                                            Log.d("notifTime", "notifTime is null")
+                                                            continue
+                                                        }
+                                                        val endTime: String? = event.child("end").getValue<String>()
+                                                        if (endTime == null) {
+                                                            Log.d("end", "end time is null; this shouldn't occur")
+                                                            continue
+                                                        }
+                                                        val notificationTime: Long = LocalDateTime.parse(endTime).minus(Duration.parse(notifTime)).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()
+                                                        val createdOn: String? = event.child("createdOn").getValue<String>()
+                                                        if (createdOn == null) {
                                                             Log.d("timestamp", "timestamp is null")
                                                             continue
                                                         }
-                                                        var timestampInSeconds: Int = (LocalDateTime.parse(timestamp, format).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()/1000).toInt()
-                                                        var notificationTime: Long = findSmallestNotificationTime(event.child("notifications"))
-                                                        if (notificationTime == Long.MAX_VALUE) {
-                                                            Log.d("notificationTime", "notification time is null") //this is null!
-                                                            continue
-                                                        }
-                                                        //Log.d("notification time", convertLongToTime(notificationTime))
-                                                        //Log.d("notification time in Long", notificationTime.toString())
-                                                        //Log.d("current time in ms: ", System.currentTimeMillis().toString())
+                                                        val createdOnInSeconds: Int = (LocalDateTime.parse(createdOn, format).atZone(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli()/1000).toInt()
                                                         var name: String? = event.child("name").getValue<String>()
                                                         if (name == null) {
                                                             Log.d("name", "name is null")
-                                                            continue
-                                                        }
-                                                        var content: String? = event.child("content").getValue<String>()
-                                                        if (content == null) {
-                                                            Log.d("content", "content is null")
                                                             continue
                                                         }
                                                         var id: String? = event.child("id").getValue<String>()
@@ -129,30 +127,34 @@ class MainActivity : AppCompatActivity() {
                                                             Log.d("id", "id is null")
                                                             continue
                                                         }
-                                                        Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + timestamp + "and notification time: " + convertLongToTime(notificationTime))
-                                                        //Notifications.setNotification(name, content, timestampInSeconds, notificationTime, id, applicationContext)
-                                                        sendOnChannel(name, content, timestampInSeconds, notificationTime, id)
+                                                        Log.d("[For each term] notification id", "logged id: " + id + " and timestamp: " + createdOn + "and notification time: " + convertLongToString(notificationTime))
+                                                        sendOnChannel(name, createdOnInSeconds, notificationTime, id)
                                                     }
                                                     else {
-                                                        Log.d("event", "event.notifications does not exist")
+                                                        Log.d("event", "event.notifTime does not exist")
+                                                        continue
                                                     }
                                                 }
                                             }
                                             else {
                                                 Log.d("events", "empty events list")
+                                                continue
                                             }
                                         }
                                         else {
                                             Log.d("course", "course.events does not exist")
+                                            continue
                                         }
                                     }
                                 }
                                 else {
                                     Log.d("courses", "empty courses list")
+                                    continue
                                 }
                             }
                             else {
                                 Log.d("term", "term.courses does not exist")
+                                continue
                             }
                         }
                     }
@@ -194,17 +196,17 @@ class MainActivity : AppCompatActivity() {
         return time
     }
 
-    fun convertLongToTime(time: Long): String {
+    fun convertLongToString(time: Long): String {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId()).format(format)
     }
 
-    fun sendOnChannel(name: String, content: String, timestampInSeconds: Int, notificationTime: Long, id: String) {
+    fun sendOnChannel(name: String, timestampInSeconds: Int, notificationTime: Long, id: String) {
         Toast.makeText(this, "Notification is set and timed for 10 seconds!", Toast.LENGTH_SHORT);
 
         var notification = NotificationCompat.Builder(this, AppNotificationChannel.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_baseline_calendar_today_24)
             .setContentTitle(name)
-            .setContentText(content)
+            .setContentText("")
             //.setAutoCancel(true) //allows user to dismiss when tapped
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER) //this is optional, make sure it creates a category
