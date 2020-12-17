@@ -263,7 +263,7 @@ class MainActivity : AppCompatActivity() {
             //source: https://stackoverflow.com/questions/42578842/android-getparcelableextra-object-always-returns-null
             .build() //this creates the notification
         val intent = Intent(this, NotificationsBroadcastReceiver::class.java)
-        intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, id)
+        intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_ID, createdOnInSeconds) //don't use id here since it's string
         intent.putExtra(NotificationsBroadcastReceiver.NOTIFICATION_MESSAGE, notification)
         val pendingIntent = PendingIntent.getBroadcast(this, createdOnInSeconds, intent, PendingIntent.FLAG_CANCEL_CURRENT)
 
