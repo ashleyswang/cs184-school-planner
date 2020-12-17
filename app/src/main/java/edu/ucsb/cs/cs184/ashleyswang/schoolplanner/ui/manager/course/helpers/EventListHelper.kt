@@ -65,7 +65,7 @@ class EventListHelper(
     private fun makeEventList() {
         eventsList.clear()
         eventsList.addAll(course.events.values
-            .filter { it.recurId == null && !it.isAssign })
+            .filter { it.recurId == null && !it.isAssign && it.end != null })
         eventsList.sortBy { it.start }
         adapter.notifyDataSetChanged()
     }

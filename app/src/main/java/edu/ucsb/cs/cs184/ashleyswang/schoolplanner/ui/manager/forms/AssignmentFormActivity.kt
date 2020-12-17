@@ -231,7 +231,7 @@ class AssignmentFormActivity : AppCompatActivity() {
         val noteInput = noteEditText.text.toString()
 
         val notifInput = notifSwitch.isChecked
-        val notifValInput = notifValEditText.text.toString().toLong()
+        val notifValInput = notifValEditText.text.toString()
         val notifUnitInput = notifUnitSpinner.selectedItemPosition
         var notifDuration = Duration.ZERO
 
@@ -244,10 +244,10 @@ class AssignmentFormActivity : AppCompatActivity() {
             if (notifInput) {
                 when (notifUnitInput) {
                     -1 -> throw Exception()
-                    0  -> notifDuration = Duration.ofMinutes(notifValInput)
-                    1  -> notifDuration = Duration.ofHours(notifValInput)
-                    2  -> notifDuration = Duration.ofDays(notifValInput)
-                    3  -> notifDuration = Duration.ofDays(notifValInput*7)
+                    0  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    1  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
                 }
             }
 
@@ -321,6 +321,6 @@ class AssignmentFormActivity : AppCompatActivity() {
         notifSwitch = this.findViewById(R.id.assign_notif_switch)
         notifLayout = this.findViewById(R.id.assign_notif_layout)
         notifValEditText = this.findViewById(R.id.assign_notif_value)
-        notifValEditText = this.findViewById(R.id.assign_notif_unit)
+        notifUnitSpinner = this.findViewById(R.id.assign_notif_unit)
     }
 }
