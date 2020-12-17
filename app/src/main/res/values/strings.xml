@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">School Planner</string>
+    <string name="title_activity_main2">MainActivity</string>
+    <string name="title_calendar">Calendar</string>
+    <string name="title_courses">Courses</string>
+    <string name="title_schedule">Schedule</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- FOR FORMS -->
+    <string name="add_new_term">Add New Term</string>
+    <string name="add_new_course">Add New Course</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="title_activity_term_form">TermFormActivity</string>
+    <string name="title_activity_course_form">CourseFormActivity</string>
+    <string name="title_activity_deadline_form">DeadlineFormActivity</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="courses_default_text">Add a school term to get started.</string>
+    <string name="courses_default_btnText">  Add Term</string>
+    <string name="course_item_upcoming_label">Upcoming:</string>
+    <string name="set_as_current_term">Set As Current Term</string>
+    <string name="title_activity_meeting_form">MeetingFormActivity</string>
+    <string name="title_activity_assign_form">AssignmentFormActivity</string>
+    <string name="title_activity_event_form">EventFormActivity</string>
+
+
 </resources>

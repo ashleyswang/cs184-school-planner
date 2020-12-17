@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/terms_toolbar_curr_group">
+        <item
+            android:id="@+id/terms_toolbar_curr_header"
+            android:title="Current Term">
+            <menu>
+                <item
+                    android:id="@+id/terms_toolbar_curr_term"
+                    android:title="Term Name"
+                    android:icon="@drawable/ic_pin_24px"
+                    android:iconTint="#606060" />
+            </menu>
+        </item>
+    </group>
+
+    <group
+        android:id="@+id/terms_toolbar_prev_group">
+        <item
+            android:id="@+id/terms_toolbar_prev_header"
+            android:title="Previous Terms"
+            android:visible="true">
+            <menu>
+                <item
+                    android:id="@+id/terms_toolbar_prev_temp"
+                    android:title="Temp Item"
+                    android:icon="@drawable/ic_pin_24px"
+                    android:iconTint="@android:color/transparent"
+                    android:visible="false"/>
+            </menu>
+        </item>
+    </group>
+
+    <group
+        android:id="@+id/terms_toolbar_add_group">
+        <item
+            android:id="@+id/terms_toolbar_add_term"
+            android:title="Add Term"
+            android:icon="@drawable/ic_add_24px"
+            android:iconTint="#606060" />
+    </group>
+
+</menu>

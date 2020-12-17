@@ -16,4 +16,9 @@ interface Scope {
     val id: String
     var name: String
     val db: DatabaseReference
+    val events: MutableMap<String, Event>
+
+    fun addEvent(): Event
+    fun removeEvent(event: Event): Event?
+
 }

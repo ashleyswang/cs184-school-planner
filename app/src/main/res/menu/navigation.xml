@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_calendar"
+        android:icon="@drawable/ic_calendar_24px"
+        android:title="Calendar" />
+    <item
+        android:id="@+id/navigation_manager"
+        android:icon="@drawable/ic_terms_24px"
+        android:title="Courses" />
+    <item
+        android:id="@+id/navigation_schedule"
+        android:icon="@drawable/ic_schedule_24px"
+        android:title="Schedule" />
+    <item
+        android:id="@+id/navigation_deadlines"
+        android:icon="@drawable/ic_format_list_bulleted_24px"
+        android:title="Deadlines" />
+</menu>

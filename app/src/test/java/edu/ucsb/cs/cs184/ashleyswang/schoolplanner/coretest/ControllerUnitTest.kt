@@ -21,7 +21,7 @@ class ControllerUnitTest {
         // Local DB for Unit Testing
         database = FirebaseDatabase.getInstance()
         database.useEmulator("localhost", 9000)
-        control = Controller("test", database)
+        control = Controller("test")
     }
 
 
@@ -31,7 +31,7 @@ class ControllerUnitTest {
         val term2 = control.addTerm()
         val term3 = control.addTerm()
 
-        val terms = control.getTerms()
+        val terms = control.terms
         assertEquals(3, terms.size)
     }
 }

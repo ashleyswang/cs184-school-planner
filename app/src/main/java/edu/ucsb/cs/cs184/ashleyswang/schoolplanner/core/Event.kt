@@ -1,4 +1,4 @@
-package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event
+package edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core
 
 import android.util.Log
 import com.google.firebase.database.DataSnapshot
@@ -6,7 +6,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -35,16 +34,24 @@ class Event {
             if (_end != null) db.child("end").setValue(_end.toString())
             else db.child("end").setValue(_end)
         }
-    var recur: RecurringEvent?
-        get() { return _recur }
-        set(value: RecurringEvent?) {
-            _recur = value
+    var recurId: String?
+        get() { return _recurId }
+        set(value) {
+            _recurId = value
+            db.child("recurId").setValue(_recurId)
+        }
+    var isAssign: Boolean
+        get() { return _isAssign }
+        set(value) {
+            _isAssign = value
+            db.child("isAssign").setValue(_isAssign)
         }
 
     private var _name: String = "New Event"
     private var _start: LocalDateTime = LocalDateTime.now()
     private var _end: LocalDateTime? = null
-    private var _recur: RecurringEvent? = null
+    private var _recurId: String? = null
+    private var _isAssign: Boolean = false
 
     /*
      * Constructor:
@@ -59,7 +66,7 @@ class Event {
         this.name = "New Event"
         this.start = LocalDateTime.now()
         this.end = null
-        this.recur = null
+        this.isAssign = false
         _addDbListener()
     }
 
@@ -75,15 +82,11 @@ class Event {
             this._start = LocalDateTime.parse(value["start"] as String)
         if (value["end"] != null)
             this._end = LocalDateTime.parse(value["end"] as String)
+        if (value["recurId"] != null)
+            this._recurId = value["recurId"] as String
+        if (value["isAssign"] != null)
+            this._isAssign = value["isAssign"] as Boolean
 
-        if (value["recur"] != null) {
-            val recurInfo = value["recur"] as Map<String, Any>
-            when (recurInfo["type"] as String) {
-                "weekly" -> this._recur = WeeklyEvent(this, recurInfo as Map<String, Any>)
-                "daily"  -> this._recur = DailyEvent(this, recurInfo as Map<String, Any>)
-                else     -> this._recur = null
-            }
-        }
         _addDbListener()
     }
 
@@ -108,7 +111,8 @@ class Event {
         db.child("start").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val value = dataSnapshot.getValue<String?>()
-                if (value != null && value != _start.toString()) _start = LocalDateTime.parse(value)
+                if (value != null && value != _start.toString())
+                    _start = LocalDateTime.parse(value)
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read start date.", error.toException())
@@ -129,23 +133,28 @@ class Event {
             }
         })
 
-
-        db.child("recur").addValueEventListener(object : ValueEventListener {
+        db.child("recurId").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<Map<String, Any>>()
-                if (value != null &&
-                    (_recur == null || _recur != null && value["type"] as String != _recur!!.type)
-                ) {
-                    when (value["type"] as String) {
-                        "weekly" -> _recur = WeeklyEvent(this@Event, value)
-                        "daily"  -> _recur = DailyEvent(this@Event, value)
-                    }
-                } else if (value == null)
-                    _recur = null
+                val value = dataSnapshot.getValue<String?>()
+                if (value != null && value != _recurId)
+                    _recurId = value
             }
             override fun onCancelled(error: DatabaseError) {
-                Log.w(TAG, "Failed to read recurrence.", error.toException())
+                Log.w(TAG, "Failed to read end date.", error.toException())
+            }
+        })
+
+        db.child("isAssign").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<Boolean?>()
+                if (value != null && value != _isAssign)
+                    _isAssign = value
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read end date.", error.toException())
             }
         })
     }
+
+
 }

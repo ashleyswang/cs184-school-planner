@@ -6,7 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
-import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.event.Event
+import java.time.LocalDateTime
 
 class Assignment {
     val TAG: String = "Assignment"
@@ -21,17 +21,41 @@ class Assignment {
         get() { return event.name }
         set(value: String) {
             event.name = value
+            db.child("name").setValue(value)
         }
 
-    var options: Options = Options()
+    var date: LocalDateTime
+        get() { return event.start }
+        set(value: LocalDateTime) {
+            event.start = value
+            db.child("date").setValue(value.toString())
+        }
+
+    var descript: String
+        get() { return _descript }
+        set(value: String) {
+            _descript = value
+            db.child("descript").setValue(_descript)
+        }
+
+    var completed: Boolean
+        get() { return _completed }
+        set(value: Boolean) {
+            _completed = value
+            db.child("completed").setValue(_completed)
+        }
+
+    private var _descript: String = ""
+    private var _completed: Boolean = false
 
     constructor(course: Course, eventId: String) {
         this.id = Scope.randomString()
         this.course = course
         this.eventId = eventId
         this.db = course.db.child("assign").child(id)
-        this.name = "New Assignment"
         this.db.child("eventId").setValue(eventId)
+        this.completed = _completed
+        this.name = "New Assignment"
         _addDbListener()
     }
 
@@ -41,60 +65,31 @@ class Assignment {
         this.db = course.db.child("assign").child(id)
         this.eventId = value["eventId"] as String
 
-        if (value["options"] != null) {
-            val opts = value["options"] as Map<String, Any>
-            this.options = Options()
-
-            val weight = opts["weight"] as Double?
-            if (weight != null) this.options._weight = weight.toFloat()
-
-            val grade = opts["grade"] as Double?
-            if (grade != null) this.options._grade = grade.toFloat()
-
-            val complete = opts["complete"] as Boolean?
-            if (complete != null) this.options._complete = complete
-        }
+        this._descript = value["descript"] as String? ?: ""
+        this._completed = value["completed"] as Boolean? ?: false
         _addDbListener()
     }
 
     private fun _addDbListener() {
-        db.child("options").addValueEventListener(object : ValueEventListener {
+        db.child("descript").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val value = dataSnapshot.getValue<Map<String, Any>>()
-                if (value != null) {
-                    options._weight = (value["weight"] as Double?)?.toFloat()
-                    options._grade = (value["grade"] as Double?)?.toFloat()
-                    options._complete = value["complete"] as Boolean?
-                } else options = Options()
+                val value = dataSnapshot.getValue<String>()
+                if (value != null && value != _descript) _descript = value
+                else if (value == null) _descript = ""
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG, "Failed to read name.", error.toException())
             }
         })
-    }
 
-    inner class Options {
-        var weight: Float?
-            get() { return _weight }
-            set(value: Float?) {
-                _weight = value
-                db.child("options").child("weight").setValue(_weight)
+        db.child("completed").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.getValue<Boolean>()
+                if (value != null && value != _completed) _completed = value
             }
-        var grade: Float?
-            get() { return _grade }
-            set(value: Float?) {
-                _grade = value
-                db.child("options").child("grade").setValue(_grade)
+            override fun onCancelled(error: DatabaseError) {
+                Log.w(TAG, "Failed to read name.", error.toException())
             }
-        var complete: Boolean?
-            get() { return _complete }
-            set(value: Boolean?) {
-                _complete = value
-                db.child("options").child("complete").setValue(_complete)
-            }
-
-        internal var _weight: Float? = null
-        internal var _grade: Float? = null
-        internal var _complete: Boolean? = null
+        })
     }
 }
