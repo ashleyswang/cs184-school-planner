@@ -57,9 +57,9 @@ class Meeting {
                 db.child("days").child(i.toString()).setValue(value[i])
         }
 
-    private var _name: String = "New Meeting"
-    private var _start: LocalTime = LocalTime.now()
-    private var _end: LocalTime = LocalTime.now()
+    private var _name: String = ""
+    private var _start: LocalTime = LocalTime.MIN
+    private var _end: LocalTime = LocalTime.MIN
     private var _createdOn: LocalDateTime = LocalDateTime.now()
     private var _notifTime: Duration? = null
     private var _daysToRepeat: BooleanArray = BooleanArray(5) { false }
@@ -68,11 +68,6 @@ class Meeting {
         this.id = Scope.randomString()
         this.course = course
         this.db = course.db.child("meet").child(id)
-        this.name = "New Meeting"
-        this.start = _start
-        this.end = _end
-        this.daysToRepeat = _daysToRepeat
-        db.child("createdOn").setValue(_createdOn.toString())
         _addDbListener()
     }
 
@@ -97,8 +92,32 @@ class Meeting {
             for (i in 0 until 5)
                 _daysToRepeat[i] = repeatDaysInfo[i]
         }
-
         _addDbListener()
+    }
+
+    fun updateDatabase(
+        name: String? = null,
+        start: LocalTime? = null,
+        end: LocalTime? = null,
+        notifTime: Duration? = null,
+        daysToRepeat: BooleanArray? = null
+    ) {
+        name?.let { _name = it }
+        start?.let { _start = it }
+        end?.let { _end = it }
+        notifTime?.let { _notifTime = it }
+        daysToRepeat?.let { _daysToRepeat = it }
+
+        val map = mapOf<String, Any?>(
+            "createdOn" to  _createdOn.toString(),
+            "name"      to  _name,
+            "start"     to  _start.toString(),
+            "end"       to  _end.toString(),
+            "notifTime" to  _notifTime?.toString(),
+            "days"      to  _daysToRepeat.toList()
+        )
+
+        db.setValue(map)
     }
 
     fun updateEvents(field: String) {
@@ -126,6 +145,13 @@ class Meeting {
             else -> dayOfWeek = -1
         }
         return (dayOfWeek > 0) && daysToRepeat[dayOfWeek]
+    }
+
+    fun isInitialized(): Boolean {
+        return _name != ""
+                && _start != LocalTime.MIN
+                && _end != LocalTime.MIN
+                && _daysToRepeat.contains(true)
     }
 
     fun removeEvents(index: Int) {

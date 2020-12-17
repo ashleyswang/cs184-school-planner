@@ -79,23 +79,28 @@ class LoginPage : AppCompatActivity() {
         // Check for existing Google Sign In account, if the user is already signed in
 // the GoogleSignInAccount will be non-null.
         val account = GoogleSignIn.getLastSignedInAccount(this)
+        if (account != null) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("isGoogleSignIn", true)
+            startActivity(intent)
+        }
+
         //updateUI(account)
     }
 
     private fun signIn() {
-        Toast.makeText(this, "opening Sign in!", Toast.LENGTH_LONG).show()
+        //Toast.makeText(this, "opening Sign in!", Toast.LENGTH_LONG).show()
         var signInIntent: Intent = mGoogleSignInClient.getSignInIntent()
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
     private fun guestSignIn() {
-        Toast.makeText(this, "opening Guest Sign in!", Toast.LENGTH_LONG).show()
+        //Toast.makeText(this, "opening Guest Sign in!", Toast.LENGTH_LONG).show()
         var file: File = File(this.filesDir.absolutePath + "/GuestId.txt")
         //writeToFile and pass along our guestId
         var username: String = writeFile()
         var signInIntent: Intent = Intent(this, MainActivity::class.java)
         signInIntent.putExtra("isGoogleSignIn", false)
-        signInIntent.putExtra("user", username)
         startActivity(signInIntent)
     }
 

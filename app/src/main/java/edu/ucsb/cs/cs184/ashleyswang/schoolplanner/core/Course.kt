@@ -6,6 +6,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import java.time.Duration
+import java.time.LocalDateTime
 
 class Course : Scope {
     val TAG: String = "Course"
@@ -88,6 +90,28 @@ class Course : Scope {
         _events.put(event.id, event)
         event.isAssign = true
         val assign: Assignment = Assignment(this, event.id)
+        _assign.put(assign.id, assign)
+        return assign
+    }
+
+    fun addAssign(
+        name: String,
+        dueDate: LocalDateTime,
+        descript: String,
+        notifTime: Duration?
+    ): Assignment {
+        val event: Event = Event(this)
+        _events.put(event.id, event)
+        event.updateDatabase(name, dueDate, null, notifTime, true)
+        val assign: Assignment = Assignment(this, event.id)
+        val map = mapOf<String, Any?>(
+            "eventId"   to event.id,
+            "name"      to name,
+            "date"      to dueDate.toString(),
+            "descript"  to descript,
+            "completed" to false
+        )
+        assign.db.setValue(map)
         _assign.put(assign.id, assign)
         return assign
     }
