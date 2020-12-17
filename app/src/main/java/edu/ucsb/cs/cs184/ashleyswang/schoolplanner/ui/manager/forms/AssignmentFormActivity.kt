@@ -4,16 +4,20 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.Exception
@@ -41,10 +45,10 @@ class AssignmentFormActivity : AppCompatActivity() {
     private lateinit var timeEditText: EditText
     private lateinit var noteEditText: EditText
 
-    private var initName: String = ""
-    private var initDate: String = ""
-    private var initTime: String = ""
-    private var initNote: String = ""
+    private lateinit var notifSwitch: SwitchMaterial
+    private lateinit var notifLayout: LinearLayout
+    private lateinit var notifValEditText: EditText
+    private lateinit var notifUnitSpinner: Spinner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,22 +124,55 @@ class AssignmentFormActivity : AppCompatActivity() {
                 }, hour, min, false)
             timePicker.show()
         }
+
+        notifSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            notifLayout.visibility =
+                if (notifSwitch.isChecked) View.VISIBLE
+                else View.GONE
+        }
     }
 
     private fun setInitialValues() {
         assignId = if (editExisting) intent.getStringExtra("assignId")!! else ""
         if (editExisting) {
-            initName = intent.getStringExtra("assignName")!!
+            var assignName = intent.getStringExtra("assignName")!!
             dueDate = LocalDateTime.parse(intent.getStringExtra("assignDue")!!)
-            initDate = getDateDisplayString(dueDate.year, dueDate.monthValue, dueDate.dayOfMonth)
-            initTime = getTimeDisplayString(dueDate.hour, dueDate.minute)
-            initNote = intent.getStringExtra("descript") ?: ""
+            var assignDate = getDateDisplayString(dueDate.year, dueDate.monthValue, dueDate.dayOfMonth)
+            var assignTime = getTimeDisplayString(dueDate.hour, dueDate.minute)
+            var assignNote = intent.getStringExtra("descript") ?: ""
 
             // set current course values into editor
-            nameEditText.setText(initName)
-            dateEditText.setText(initDate)
-            timeEditText.setText(initTime)
-            noteEditText.setText(initNote)
+            nameEditText.setText(assignName)
+            dateEditText.setText(assignDate)
+            timeEditText.setText(assignTime)
+            noteEditText.setText(assignNote)
+
+            val checkNotif = intent.getStringExtra("assignNotif") != null
+            var notifVal: Int = 0
+            var notifUnit: Int = -1
+            if (checkNotif) {
+                val duration = Duration.parse(intent.getStringExtra("assignNotif")!!)
+                notifVal = duration.toMinutes().toInt()
+                notifUnit = 1
+                if (notifVal % 60 == 0) {
+                    notifVal /= 60
+                    notifUnit = 2
+                    if (notifVal % 24 == 0) {
+                        notifVal /= 24
+                        notifUnit = 3
+                        if (notifVal % 7 == 0) {
+                            notifVal /= 7
+                            notifUnit = 4
+                        }
+                    }
+                }
+            }
+            notifSwitch.isChecked = checkNotif
+            if (checkNotif) {
+                notifLayout.visibility = View.VISIBLE
+                notifValEditText.setText(notifVal.toString())
+                notifUnitSpinner.setSelection(notifUnit)
+            }
 
             makeDeleteButton()
         }
@@ -188,18 +225,36 @@ class AssignmentFormActivity : AppCompatActivity() {
         val timeInput = timeEditText.text.toString()
         val noteInput = noteEditText.text.toString()
 
+        val notifInput = notifSwitch.isChecked
+        val notifValInput = notifValEditText.text.toString()
+        val notifUnitInput = notifUnitSpinner.selectedItemPosition
+        var notifDuration = Duration.ZERO
+
         try {
             if (nameInput == "") throw Exception()
             val dueTime = parseTimeDisplayString(timeInput)
             dueDate = parseDateDisplayString(dateInput)
                 .withHour(dueTime.hour).withMinute(dueTime.minute)
 
-            val assign = course.assign[assignId] ?: course.addAssign()
+            if (notifInput) {
+                when (notifUnitInput) {
+                    -1 -> throw Exception()
+                    1  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    4  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
+                }
+            }
 
-            if (nameInput != initName) assign.name = nameInput
-            if (dateInput != initDate || timeInput != initTime)
-                assign.date = dueDate
-            if (noteInput != initNote) assign.descript = noteInput
+            val notifSetValue = if (notifInput) notifDuration else null
+
+            if (editExisting) {
+                val assign = course.assign[assignId]!!
+                assign.updateDatabase(nameInput, dueDate, noteInput, notifSetValue)
+                if (!notifInput) assign.event.notifTime = null
+            } else {
+                course.addAssign(nameInput, dueDate, noteInput, notifSetValue)
+            }
             return true
         } catch (e: Exception) {
             return false
@@ -251,5 +306,10 @@ class AssignmentFormActivity : AppCompatActivity() {
         dateEditText = this.findViewById(R.id.assign_date)
         timeEditText = this.findViewById(R.id.assign_time)
         noteEditText = this.findViewById(R.id.assign_description)
+
+        notifSwitch = this.findViewById(R.id.assign_notif_switch)
+        notifLayout = this.findViewById(R.id.assign_notif_layout)
+        notifValEditText = this.findViewById(R.id.assign_notif_value)
+        notifUnitSpinner = this.findViewById(R.id.assign_notif_unit)
     }
 }

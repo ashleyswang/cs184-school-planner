@@ -105,6 +105,8 @@ class AssignmentListHelper(
         intent.putExtra("assignName", assign.name)
         intent.putExtra("assignDue", assign.date.toString())
         intent.putExtra("descript", assign.descript)
+        if (assign.event.notifTime != null)
+            intent.putExtra("assignNotif", assign.event.notifTime.toString())
         fragment.startActivity(intent)
     }
 

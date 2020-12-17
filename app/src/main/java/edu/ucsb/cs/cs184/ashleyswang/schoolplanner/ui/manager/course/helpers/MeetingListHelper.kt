@@ -20,7 +20,9 @@ import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewF
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.course.CourseViewViewModel
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms.CourseFormActivity
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.ui.manager.forms.MeetingFormActivity
+import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.schedule
 
 
 class MeetingListHelper(
@@ -101,6 +103,8 @@ class MeetingListHelper(
         intent.putExtra("meetStart", meet.start.toString())
         intent.putExtra("meetEnd", meet.end.toString())
         intent.putExtra("meetRecur", meet.daysToRepeat)
+        if (meet.notifTime != null)
+            intent.putExtra("meetNotif", meet.notifTime.toString())
         fragment.startActivity(intent)
     }
 

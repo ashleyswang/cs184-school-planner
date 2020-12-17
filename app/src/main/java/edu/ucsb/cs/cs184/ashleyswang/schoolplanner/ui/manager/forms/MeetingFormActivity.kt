@@ -11,9 +11,11 @@ import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.R
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Controller
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalTime
 import kotlin.Exception
 
@@ -39,10 +41,10 @@ class MeetingFormActivity : AppCompatActivity() {
     private lateinit var endTimeEditText: EditText
     private lateinit var daySelectViews: ArrayList<CheckBox>
 
-    private var initMeetName: String = "New Class"
-    private var initStartTime: String = ""
-    private var initEndTime: String = ""
-    private var initSelDays: BooleanArray = BooleanArray(5) { false }
+    private lateinit var notifSwitch: SwitchMaterial
+    private lateinit var notifLayout: LinearLayout
+    private lateinit var notifValEditText: EditText
+    private lateinit var notifUnitSpinner: Spinner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,23 +121,50 @@ class MeetingFormActivity : AppCompatActivity() {
     private fun setInitialValues() {
         meetId = if (editExisting) intent.getStringExtra("meetId")!! else ""
         if (editExisting) {
-            initMeetName = intent.getStringExtra("meetName")!!
+            val meetName = intent.getStringExtra("meetName")!!
             startTime = LocalTime.parse(intent.getStringExtra("meetStart")!!)
             endTime = LocalTime.parse(intent.getStringExtra("meetEnd")!!)
 
             // set current course values into editor
-            meetNameEditText.setText(initMeetName)
+            meetNameEditText.setText(meetName)
 
-            initStartTime = getTimeDisplayString(startTime.hour, startTime.minute)
-            startTimeEditText.setText(initStartTime)
+            val meetStart = getTimeDisplayString(startTime.hour, startTime.minute)
+            startTimeEditText.setText(meetStart)
 
-            initEndTime = getTimeDisplayString(endTime!!.hour, endTime!!.minute)
-            endTimeEditText.setText(initEndTime)
+            val meetEnd = getTimeDisplayString(endTime!!.hour, endTime!!.minute)
+            endTimeEditText.setText(meetEnd)
 
             // lecture recurrence set as boolean array representing [M, T, W, R, F]
-            initSelDays = intent.getBooleanArrayExtra("meetRecur")!!
+            var meetRecur = intent.getBooleanArrayExtra("meetRecur")!!
             for (i in 0 until 5)
-                daySelectViews[i].isChecked = initSelDays[i]
+                daySelectViews[i].isChecked = meetRecur[i]
+
+            var checkNotif = intent.getStringExtra("meetNotif") != null
+            var notifVal: Int = 0
+            var notifUnit: Int = -1
+            if (checkNotif) {
+                val duration = Duration.parse(intent.getStringExtra("meetNotif")!!)
+                notifVal = duration.toMinutes().toInt()
+                notifUnit = 0
+                if (notifVal % 60 == 0) {
+                    notifVal /= 60
+                    notifUnit = 1
+                    if (notifVal % 24 == 0) {
+                        notifVal /= 24
+                        notifUnit = 2
+                        if (notifVal % 7 == 0) {
+                            notifVal /= 7
+                            notifUnit = 3
+                        }
+                    }
+                }
+            }
+            notifSwitch.isChecked = checkNotif
+            if (checkNotif) {
+                notifLayout.visibility = View.VISIBLE
+                notifValEditText.setText(notifVal.toString())
+                notifUnitSpinner.setSelection(notifUnit)
+            }
 
             makeDeleteButton()
         }
@@ -195,23 +224,39 @@ class MeetingFormActivity : AppCompatActivity() {
                     3 -> selDayInput.add(DayOfWeek.THURSDAY)
                     4 -> selDayInput.add(DayOfWeek.FRIDAY)
                 }
+
+        val notifInput = notifSwitch.isChecked
+        val notifValInput = notifValEditText.text.toString()
+        val notifUnitInput = notifUnitSpinner.selectedItemPosition
+        var notifDuration = Duration.ZERO
+
         try {
             // Get First Lecture Start Time
             val inputStartTime = parseTimeDisplayString(startInput)
             val inputEndTime = parseTimeDisplayString(endInput)
             if (nameInput == "" || selDayInput.isEmpty()) throw Exception()
 
+            if (notifInput) {
+                when (notifUnitInput) {
+                    -1 -> throw Exception()
+                    0  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    1  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
+                }
+            }
+
             val meeting = course.meet[meetId] ?: course.addMeet()
 
-            if (nameInput != initMeetName) meeting.name = nameInput
-            if (startInput != initStartTime) meeting.start = inputStartTime
-            if (endInput != initEndTime) meeting.end = inputEndTime
-            if (!recurDayEquals(initSelDays, selDayInput)) {
-                val lectDaysArray = BooleanArray(5) { false }
-                for (i in 0 until 5)
-                    lectDaysArray[i] = daySelectViews[i].isChecked
-                meeting.daysToRepeat = lectDaysArray
-            }
+            val lectDaysArray = BooleanArray(5) { false }
+            for (i in 0 until 5)
+                lectDaysArray[i] = daySelectViews[i].isChecked
+            val notifSetValue = if (notifInput) notifDuration else null
+
+            meeting.updateDatabase(nameInput, inputStartTime,
+                inputEndTime, notifSetValue, lectDaysArray)
+            if (!notifInput) meeting.notifTime = null
+
             return true
         } catch (e: Exception) {
             return false
@@ -266,5 +311,10 @@ class MeetingFormActivity : AppCompatActivity() {
         val selectF: CheckBox = this.findViewById(R.id.meeting_day_fri)
         daySelectViews =
             arrayListOf<CheckBox>(selectM, selectT, selectW, selectR, selectF)
+
+        notifSwitch = this.findViewById(R.id.meeting_notif_switch)
+        notifLayout = this.findViewById(R.id.meeting_notif_layout)
+        notifValEditText = this.findViewById(R.id.meeting_notif_value)
+        notifUnitSpinner = this.findViewById(R.id.meeting_notif_unit)
     }
 }
