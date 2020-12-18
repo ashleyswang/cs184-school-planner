@@ -92,7 +92,7 @@ class CourseListHelper(
     private fun makeCourseViewAdapter() {
         adapter = CoursesAdapter(courseList)
         courseView.adapter = adapter
-        courseView.layoutManager = LinearLayoutManager(fragment.requireContext())
+        courseView.layoutManager = LinearLayoutManager(fragment.getContext())
 //        val divider = DividerItemDecoration(
 //            courseView.context,
 //            (courseView.layoutManager as LinearLayoutManager).orientation

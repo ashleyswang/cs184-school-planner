@@ -47,7 +47,7 @@ class ToolbarHelper(
 
     init {
         Log.d(TAG, "init")
-        toolbar.overflowIcon = AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_more_vert_white_24)
+        toolbar.overflowIcon = fragment.getContext()?.let { AppCompatResources.getDrawable(it, R.drawable.ic_more_vert_white_24) }
         controller.db.child("default").addValueEventListener(dbEventListener)
         setToolbarListeners()
 
@@ -100,8 +100,8 @@ class ToolbarHelper(
     private fun updateDefaultIcon() {
         val item: MenuItem? = toolbar.menu.findItem(R.id.terms_toolbar_mark_fav)
         item?.icon =
-            if (default) AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_pin_white_24px)
-            else AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_pin_outline_24px)
+            if (default) fragment.getContext()?.let { AppCompatResources.getDrawable(it, R.drawable.ic_pin_white_24px) }
+            else fragment.getContext()?.let { AppCompatResources.getDrawable(it, R.drawable.ic_pin_outline_24px) }
 
     }
 
