@@ -247,10 +247,10 @@ class MeetingFormActivity : AppCompatActivity() {
             if (notifInput) {
                 when (notifUnitInput) {
                     -1 -> throw Exception()
-                    0  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
-                    1  -> notifDuration = Duration.ofHours(notifValInput.toLong())
-                    2  -> notifDuration = Duration.ofDays(notifValInput.toLong())
-                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
+                    1  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    2  -> notifDuration = Duration.ofHours(notifValInput.toLong())
+                    3  -> notifDuration = Duration.ofDays(notifValInput.toLong())
+                    4  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
                 }
             }
 
