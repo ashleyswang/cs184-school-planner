@@ -173,7 +173,9 @@ class ManagerFragment : Fragment() {
     }
 
     fun getDefaultTerm() {
-        if (controller.default != null)
+        if (this.activeTerm != null)
+            return
+        else if (controller.default != null)
             this.activeTerm = controller.terms[controller.default!!]!!
         else if (model.termsList.isNotEmpty())
             this.activeTerm = model.termsList.last()
