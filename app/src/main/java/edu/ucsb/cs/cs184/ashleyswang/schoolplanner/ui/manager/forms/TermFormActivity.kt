@@ -197,10 +197,8 @@ class TermFormActivity : AppCompatActivity() {
                 else controller.addTerm()
             termId = term.id
 
+            term.updateDatabase(name, start, end)
             if (currTermInput) controller.default = term.id
-            term.start = start
-            term.name = name
-            term.end = end
 
             return true
         } catch (e: Exception) {

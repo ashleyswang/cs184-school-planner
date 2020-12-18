@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "167317427267",
+    "firebase_url": "https://cs184-schoolplanner-default-rtdb.firebaseio.com",
     "project_id": "cs184-schoolplanner",
     "storage_bucket": "cs184-schoolplanner.appspot.com"
   },
@@ -14,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "167317427267-qaag651ad6hja2jb9hbr18nk2da4uunr.apps.googleusercontent.com",
+          "client_id": "167317427267-7kus36gj2ls7apd3v7uv37q1pivhr7cv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.ucsb.cs.cs184.ashleyswang.schoolplanner",
+            "certificate_hash": "354c2a4bc4e4e546a0663d91a0335c58fa2ae865"
+          }
+        },
+        {
+          "client_id": "167317427267-8baqjh6njha3i72oa1hc0p04jsvp0k23.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -27,7 +36,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "167317427267-qaag651ad6hja2jb9hbr18nk2da4uunr.apps.googleusercontent.com",
+              "client_id": "167317427267-8baqjh6njha3i72oa1hc0p04jsvp0k23.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

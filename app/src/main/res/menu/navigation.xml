@@ -10,6 +10,6 @@
         android:title="Courses" />
     <item
         android:id="@+id/navigation_schedule"
-        android:icon="@drawable/ic_schedule_24px"
+        android:icon="@drawable/ic_person_24px"
         android:title="Sign Out" />
 </menu>

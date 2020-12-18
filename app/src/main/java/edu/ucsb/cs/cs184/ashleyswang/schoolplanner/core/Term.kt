@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -52,10 +53,10 @@ class Term : Scope {
         this.id = Scope.randomString()
         this.controller = controller
         this.db = controller.db.child("terms").child(id)
-        this.name = "New Term"
-        this.start = LocalDateTime.now()
-        this.end = LocalDateTime.now()
-        this.db.child("createdOn").setValue(createdOn.format(format))
+//        this.name = "New Term"
+//        this.start = LocalDateTime.now()
+//        this.end = LocalDateTime.now()
+//        this.db.child("createdOn").setValue(createdOn.format(format))
         _addDbListener()
     }
 
@@ -91,6 +92,25 @@ class Term : Scope {
                 this._events.put(event.id, event)
             }
         _addDbListener()
+    }
+
+    fun updateDatabase(
+        name: String? = null,
+        start: LocalDateTime? = null,
+        end: LocalDateTime? = null
+    ) {
+        name?.let { _name = it }
+        start?.let { _start = it }
+        end?.let { _end = it }
+
+        val map = mapOf<String, Any?>(
+            "createdOn" to  _createdOn.format(format),
+            "name"      to  _name,
+            "start"     to  _start.format(format),
+            "end"       to _end.format(format)
+        )
+
+        db.setValue(map)
     }
 
     fun addCourse(): Course {
