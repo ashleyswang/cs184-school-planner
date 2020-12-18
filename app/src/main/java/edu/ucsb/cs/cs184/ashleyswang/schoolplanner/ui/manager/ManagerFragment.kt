@@ -98,6 +98,7 @@ class ManagerFragment : Fragment() {
                     ACTION_ADD -> {
                         val termId = data.getStringExtra("termId")
                         activeTerm = controller.terms[termId]!!
+                        navViewHelper = NavViewHelper(this, model) //ok this should update it
                     }
                     ACTION_DEL -> {
                         getDefaultTerm()

@@ -20,6 +20,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.core.Scope
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.AppNotificationChannel
 import edu.ucsb.cs.cs184.ashleyswang.schoolplanner.other.notifications.NotificationsBroadcastReceiver
@@ -42,6 +44,20 @@ class LoginPage : AppCompatActivity() {
         // Configure sign-in to request the user's ID, email address, and basic
 // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         var file: File = File(this.filesDir.absolutePath + "/GuestId.txt")
+
+        var checkIntent: Intent = intent
+        if (checkIntent != null) {
+            var guestBool = intent.getBooleanExtra("deleteGuest", false)
+            if (guestBool != null && guestBool) {
+                file.delete()
+                intent.getStringExtra("guestName")?.let {
+                    Firebase.database.getReference("core").child(
+                        it
+                    ).removeValue()
+                    Log.d("guestname: ", intent.getStringExtra("guestName")!!)
+                }
+            }
+        }
         if (file.exists()) {
             //continue using this
             var username: String = readFile()

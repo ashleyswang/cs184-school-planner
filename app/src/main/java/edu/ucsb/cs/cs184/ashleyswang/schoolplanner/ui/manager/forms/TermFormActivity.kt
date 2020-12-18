@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -179,7 +180,10 @@ class TermFormActivity : AppCompatActivity() {
         val currTermInput = currTermSwitch.isChecked
 
         try {
-            if (name == "") throw Exception()
+            if (name == "")  {
+                Log.d("name is null", "name is null")
+                throw Exception()
+            }
 
             val startVals: ArrayList<Int> = arrayListOf<Int>()
             for (value in startInput.split('/'))
@@ -196,7 +200,7 @@ class TermFormActivity : AppCompatActivity() {
             val term = if (editExisting) controller.terms[termId]!!
                 else controller.addTerm()
             termId = term.id
-
+            Log.d("333", "333")
             if (currTermInput) controller.default = term.id
             term.start = start
             term.name = name
@@ -204,6 +208,7 @@ class TermFormActivity : AppCompatActivity() {
 
             return true
         } catch (e: Exception) {
+            Log.d("222", "222")
             return false
         }
     }

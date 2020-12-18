@@ -79,7 +79,8 @@ class NavViewHelper (
         for (t in termsList.reversed()) {
             if (t.id != term?.id) {
                 val item = prevSubMenu.add(prevTerm.groupId, Menu.NONE, Menu.NONE, t.name)
-                item.icon = AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_check_circle_24)
+                item.icon = fragment.getContext()?.let { AppCompatResources.getDrawable(it, R.drawable.ic_check_circle_24) } //race condition here.
+                //item.icon = AppCompatResources.getDrawable(fragment.requireContext(), R.drawable.ic_check_circle_24)
                 setTermClickListener(item, t)
                 menuItems.put(t.id, item)
             }

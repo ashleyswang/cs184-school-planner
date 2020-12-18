@@ -31,8 +31,10 @@ class UserAuthFragment : Fragment() {
         val signOutbutton: Button = root.findViewById(R.id.sign_out_button)
         signOutbutton.setOnClickListener {
             var file: File = File((activity?.filesDir?.absolutePath ?: "") + "/GuestId.txt")
+
             if (file.exists()) {
-                Log.d("UserAuthFragment", "deleted")
+                Log.d("UserAuthFragment", "will delete")
+                /*
                 file.delete()
                 //Log.d("key: ", (activity as MainActivity).controller.db.key.toString())
                 (activity as MainActivity).controller.db.key?.let { it1 ->
@@ -40,8 +42,10 @@ class UserAuthFragment : Fragment() {
                         it1
                     ).removeValue()
                 }
-                (activity as MainActivity).controller.db.removeValue()
+                (activity as MainActivity).controller.db.removeValue()*/
                 var intent: Intent = Intent(context, LoginPage::class.java)
+                intent.putExtra("deleteGuest", true)
+                intent.putExtra("guestName", (activity as MainActivity).controller.db.key.toString())
                 startActivity(intent)
             }
             else {
@@ -57,6 +61,8 @@ class UserAuthFragment : Fragment() {
                                 Log.d("UserAuthFragment", "Signed out successfully!")
                                 //finish()
                                 val intent = Intent(context, LoginPage::class.java)
+                                intent.putExtra("deleteGuest", false)
+                                intent.putExtra("guestName", (activity as MainActivity).controller.db.key.toString())
                                 startActivity(intent)
                             })
                     }

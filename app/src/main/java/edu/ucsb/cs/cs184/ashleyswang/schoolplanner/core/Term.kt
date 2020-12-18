@@ -52,7 +52,7 @@ class Term : Scope {
         this.id = Scope.randomString()
         this.controller = controller
         this.db = controller.db.child("terms").child(id)
-        this.name = "New Term"
+        this.name = "New Term" //yuh right here
         this.start = LocalDateTime.now()
         this.end = LocalDateTime.now()
         this.db.child("createdOn").setValue(createdOn.format(format))
