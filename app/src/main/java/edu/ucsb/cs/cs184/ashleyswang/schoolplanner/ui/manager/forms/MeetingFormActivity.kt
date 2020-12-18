@@ -152,16 +152,16 @@ class MeetingFormActivity : AppCompatActivity() {
             if (checkNotif) {
                 val duration = Duration.parse(intent.getStringExtra("meetNotif")!!)
                 notifVal = duration.toMinutes().toInt()
-                notifUnit = 0
+                notifUnit = 1
                 if (notifVal % 60 == 0) {
                     notifVal /= 60
-                    notifUnit = 1
+                    notifUnit = 2
                     if (notifVal % 24 == 0) {
                         notifVal /= 24
-                        notifUnit = 2
+                        notifUnit = 3
                         if (notifVal % 7 == 0) {
                             notifVal /= 7
-                            notifUnit = 3
+                            notifUnit = 4
                         }
                     }
                 }

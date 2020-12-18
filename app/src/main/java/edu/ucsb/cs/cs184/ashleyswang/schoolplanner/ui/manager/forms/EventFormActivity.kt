@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -164,27 +165,31 @@ class EventFormActivity : AppCompatActivity() {
             endEditText.setText(eventEnd)
 
             var checkNotif = intent.getStringExtra("eventNotif") != null
+            if (checkNotif == null) {
+                Log.d("checkNotif", "checkNotif is null")
+            }
             var notifVal: Int = 0
             var notifUnit: Int = -1
             if (checkNotif) {
                 val duration = Duration.parse(intent.getStringExtra("eventNotif")!!)
                 notifVal = duration.toMinutes().toInt()
-                notifUnit = 0
+                notifUnit = 1
                 if (notifVal % 60 == 0) {
                     notifVal /= 60
-                    notifUnit = 1
+                    notifUnit = 2
                     if (notifVal % 24 == 0) {
                         notifVal /= 24
-                        notifUnit = 2
+                        notifUnit = 3
                         if (notifVal % 7 == 0) {
                             notifVal /= 7
-                            notifUnit = 3
+                            notifUnit = 4
                         }
                     }
                 }
             }
             notifSwitch.isChecked = checkNotif
             if (checkNotif) {
+                Log.d("checkNotif", "checkNotif is not null")
                 notifLayout.visibility = View.VISIBLE
                 notifValEditText.setText(notifVal.toString())
                 notifUnitSpinner.setSelection(notifUnit)
