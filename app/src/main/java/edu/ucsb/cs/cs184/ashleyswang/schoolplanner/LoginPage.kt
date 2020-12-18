@@ -79,11 +79,6 @@ class LoginPage : AppCompatActivity() {
         // Check for existing Google Sign In account, if the user is already signed in
 // the GoogleSignInAccount will be non-null.
         val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.putExtra("isGoogleSignIn", true)
-            startActivity(intent)
-        }
 
         //updateUI(account)
     }
