@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -116,6 +117,12 @@ class MeetingFormActivity : AppCompatActivity() {
                 }, hour, min, false)
             picker.show()
         }
+
+        notifSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            notifLayout.visibility =
+                if (notifSwitch.isChecked) View.VISIBLE
+                else View.GONE
+        }
     }
 
     private fun setInitialValues() {
@@ -161,6 +168,7 @@ class MeetingFormActivity : AppCompatActivity() {
             }
             notifSwitch.isChecked = checkNotif
             if (checkNotif) {
+                Log.d("checkNotif", "checkNotif is true")
                 notifLayout.visibility = View.VISIBLE
                 notifValEditText.setText(notifVal.toString())
                 notifUnitSpinner.setSelection(notifUnit)

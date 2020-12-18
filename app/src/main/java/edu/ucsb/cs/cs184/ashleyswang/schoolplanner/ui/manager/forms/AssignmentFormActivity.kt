@@ -239,7 +239,7 @@ class AssignmentFormActivity : AppCompatActivity() {
             if (notifInput) {
                 when (notifUnitInput) {
                     -1 -> throw Exception()
-                    1  -> notifDuration = Duration.ofMinutes(notifValInput.toLong())
+                    1  -> notifDuration = Duration.ofMinutes(notifValInput.toLong()) //starts at 1 because index 0 is the "select" button
                     2  -> notifDuration = Duration.ofHours(notifValInput.toLong())
                     3  -> notifDuration = Duration.ofDays(notifValInput.toLong())
                     4  -> notifDuration = Duration.ofDays(notifValInput.toLong()*7)
